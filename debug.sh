@@ -39,15 +39,10 @@ else
     exit 1
 fi
 
-# Create tmp directory and result file if they don't exist
-mkdir -p ./tmp
-
-touch ./tmp/result.txt || echo "Error creating file!" >&2
-
 echo "Listing files..."
 
 find_files_without \
-	search_dir="\/Users\/luketych\/Dev" \
+	search_dir="\/Users\/luketych\/Downloads" \
 	dev_null="false" \
 	depth="3" \
 	extensions="csv|toml" \
@@ -58,10 +53,12 @@ find_files_without \
 	use_package_files="false" \
 	use_web_files="true" \
     \
-    ansi="true"
+    ansi="true" \
+    \
+    use_media_files="false"
 
 
-debug_result=$(cat ./tmp/result.txt 2>/dev/null)
+debug_result=$(cat ./tmp/result.log 2>/dev/null)
 
 
 

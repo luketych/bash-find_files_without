@@ -3,9 +3,9 @@
     {
         "type": "bashdb",
         "request": "launch",
-        "name": "Bash-Debug (select script from list of sh files)",
+        "name": "Debug debug.sh",
         "cwd": "${workspaceFolder}",
-        "program": "${command:SelectScriptName}",
+        "program": "${workspaceFolder}/debug.sh",
         "args": [],
         "terminalKind": "integrated"
     }
