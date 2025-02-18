@@ -1,0 +1,5 @@
+.[1;33mr[31mw[4;32mx[0m[33mr[1;90m-[0m[32mx[33mr[1;90m-[0m[32mx[0m@   [32m71[0m [1;33mluketych[0m [34m18 Feb 14:40[0m [36m./[1;32mffwo.sh[0m
+.[1;33mr[31mw[4;32mx[0m[33mr[1;90m-[0m[32mx[33mr[1;90m-[0m[32mx[0m@  [32m375[0m [1;33mluketych[0m [34m18 Feb 14:39[0m [36m./[1;32mfind_files_without-call.sh[0m
+.[1;33mr[31mw[4;32mx[0m[33mr[1;90m-[0m[32mx[33mr[1;90m-[0m[32mx[0m@ [1;32m3.4k[0m [1;33mluketych[0m [34m18 Feb 14:44[0m [36m./[1;32mfind_files_without.sh[0m
+.[1;33mr[31mw[90m-[0m[33mr[1;90m--[0m[33mr[1;90m--[0m@ [1;32m1.7k[0m [1;33mluketych[0m [34m18 Feb 14:35[0m [36m./[0mindex.sh
+.[1;33mr[31mw[4;32mx[0m[33mr[1;90m-[0m[32mx[33mr[1;90m-[0m[32mx[0m@ [1;32m3.7k[0m [1;33mluketych[0m [34m18 Feb 14:35[0m [36m./archive/[1;32mls.sh[0m
