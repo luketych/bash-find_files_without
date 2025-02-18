@@ -15,6 +15,7 @@ find_files_without() {
     local dev_null="true"
     local depth="2"  # Default depth
     local extensions=""
+    local depth="2"
     local directories=""
     local substrings=""
     local use_text_files="true"
@@ -24,7 +25,7 @@ find_files_without() {
     local print_screen="true"  # New argument for printing to screen
     local verbose="false"  # New verbose option
 
-    # Parse named arguments
+    # Parse named arguments for backwards compatibility
     for arg in "$@"; do
         case "$arg" in
             search_dir=*) search_dir="${arg#*=}" ;;
@@ -39,6 +40,7 @@ find_files_without() {
             ansi=*) ansi="${arg#*=}" ;;
             print_screen=*) print_screen="${arg#*=}" ;;
             verbose=*) verbose="${arg#*=}" ;;
+            temp_file=*) temp_result_file="${arg#*=}" ;;
             *) echo "❌ Error: Unknown argument: $arg" >&2 && return 1 ;;
         esac
     done

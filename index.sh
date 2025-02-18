@@ -32,10 +32,10 @@ trap cleanup EXIT
 trap handle_sigint SIGINT
 
 # Source the functions file with error checking
-if [ -f "./ls.sh" ]; then
-    source "./ls.sh"
+if [ -f "./find_files_without.sh" ]; then
+    source "./find_files_without.sh"
 else
-    echo "Error: ls.sh not found in current directory"
+    echo "Error: find_files_without.sh not found in current directory"
     exit 1
 fi
 
@@ -46,7 +46,7 @@ touch ./tmp/result.txt || echo "Error creating file!" >&2
 
 echo "Listing files..."
 
-find_files_excluding \
+find_files_without \
 	search_dir="\/Users\/luketych\/Dev" \
 	dev_null="false" \
 	depth="3" \
