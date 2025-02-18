@@ -7,10 +7,10 @@ text_files="md|txt|log|rst|doc|docx|pdf"
 package_files="apkg|package.json|pyproject.toml|Cargo.toml|Pipfile|composer.json|requirements.txt"
 config_files="properties|yaml|yml|toml|ini|conf|cfg|config|properties|settings|preferences|options|options.json|options.yaml|options.yml|options.toml"
 web_files="html|css|js|jsx|ts|tsx|scss|sass"
-media_files="mp3.asd|mp3|reapeaks|reapindex|mp4|m4a|avi|mov|wmv|flv|mpeg|mpg|m4v|mkv|webm|gif|jpg|jpeg|png|svg|ico|webp|heic|heif|wav|mp4.part|mp4.ytdl"
-archive_files="bak|zip|tar|gz|bz2|rar|7z|iso|dmg|pkg|apkg|deb|rpm|exe|msi|app|deb|rpm|exe|msi|app"
+media_files="aac|avif|aif|mp3.asd|mp3|reapeaks|reapindex|mp4|m4a|avi|mov|wmv|flv|mpeg|mpg|m4v|mkv|webm|gif|jpg|jpeg|png|svg|ico|webp|heic|heif|wav|mp4.part|mp4.ytdl"
+archive_files="tgz|.tar.gz|tar.bz2|tar.xz|tar.7z|tar.rar|tar.gz|tar.bz2|tar.xz|tar.7z|tar.rar|bak|zip|tar|gz|bz2|rar|7z|iso|dmg|pkg|apkg|deb|rpm|exe|msi|app|deb|rpm|exe|msi|app"
 database_files="db|sqlite|sqlite3|sqlite2|sqlite2.db|sqlite3.db|sqlite2.db-journal|sqlite3.db-journal"
-diagram_files="drawio"
+diagram_files="drawio|concept|excalidraw"
 markup_files="md|xml"
 apple_config_files="plist"
 programming_files="py|js|jsx|ts|rb|php|cjs|sh|bash|zsh|fish"
@@ -152,7 +152,7 @@ find_files_without() {
 
     # Build the command dynamically
     local cmd="fd -d $depth -t f --no-hidden -0 . $search_dir"
-    [[ -n "$extensions" ]] && cmd+=" | egrep -zv '\.(${extensions})$' 2>/dev/null"
+    [[ -n "$extensions" ]] && cmd+=" | egrep -zv '\.(${extensions})(~)?$' 2>/dev/null"
     [[ -n "$directories" ]] && cmd+=" | egrep -zv '(${directories})/$1' 2>/dev/null"
     [[ -n "$substrings" ]] && cmd+=" | egrep -zv '(${substrings})' 2>/dev/null"
 
