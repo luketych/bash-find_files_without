@@ -28,6 +28,7 @@ usage() {
     echo "      --no-markup-files   Disable markup file exclusions"
     echo "      --no-apple-config-files Disable Apple config file exclusions"
     echo "      --no-programming-files  Disable programming file exclusions"
+    echo "      --no-windows-files  Disable Windows file exclusions"
     echo "      --where             Show script location"
     echo "  -h, --help              Show this help message"
 }
@@ -61,6 +62,7 @@ USE_DIAGRAM_FILES="true"
 USE_MARKUP_FILES="true"
 USE_APPLE_CONFIG_FILES="true"
 USE_PROGRAMMING_FILES="true"
+USE_WINDOWS_FILES="true"
 FORCE_CREATE_TMP="false"
 STEP="false"
 
@@ -177,6 +179,10 @@ while [[ "$#" -gt 0 ]]; do
             USE_PROGRAMMING_FILES="false"
             shift
             ;;
+        --no-windows-files)
+            USE_WINDOWS_FILES="false"
+            shift
+            ;;
         -h|--help)
             usage
             exit 0
@@ -210,6 +216,7 @@ find_files_without \
     "use_markup_files=$USE_MARKUP_FILES" \
     "use_apple_config_files=$USE_APPLE_CONFIG_FILES" \
     "use_programming_files=$USE_PROGRAMMING_FILES" \
+    "use_windows_files=$USE_WINDOWS_FILES" \
     "ansi=$ANSI" \
     "print_screen=$PRINT_SCREEN" \
     "verbose=$VERBOSE" \

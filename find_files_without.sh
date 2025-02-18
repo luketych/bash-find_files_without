@@ -13,6 +13,7 @@ database_files="db|sqlite|sqlite3|sqlite2|sqlite2.db|sqlite3.db|sqlite2.db-journ
 diagram_files="drawio|concept|excalidraw"
 markup_files="md|xml"
 apple_config_files="plist"
+windows_files="dll|exe|msi|bat|cmd|ps1|reg|sys|inf|cab"
 programming_files="py|js|jsx|ts|rb|php|cjs|sh|bash|zsh|fish"
 
 find_files_without() {
