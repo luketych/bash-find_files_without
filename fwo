@@ -21,6 +21,9 @@ usage() {
     echo "      --no-package-files  Disable package file exclusions"
     echo "      --no-web-files      Disable web file exclusions"
     echo "      --no-media-files    Disable media file exclusions"
+    echo "      --no-image-files    Disable image file exclusions"
+    echo "      --no-video-files    Disable video file exclusions"
+    echo "      --no-audio-files    Disable audio file exclusions"
     echo "      --no-archive-files  Disable archive file exclusions"
     echo "      --no-database-files Disable database file exclusions"
     echo "      --no-config-files   Disable config file exclusions"
@@ -55,6 +58,9 @@ USE_TEXT_FILES="true"
 USE_PACKAGE_FILES="true"
 USE_WEB_FILES="true"
 USE_MEDIA_FILES="true"
+USE_IMAGE_FILES="true"
+USE_VIDEO_FILES="true"
+USE_AUDIO_FILES="true"
 USE_ARCHIVE_FILES="true"
 USE_DATABASE_FILES="true"
 USE_CONFIG_FILES="true"
@@ -151,6 +157,18 @@ while [[ "$#" -gt 0 ]]; do
             USE_MEDIA_FILES="false"
             shift
             ;;
+        --no-image-files)
+            USE_IMAGE_FILES="false"
+            shift
+            ;;
+        --no-video-files)
+            USE_VIDEO_FILES="false"
+            shift
+            ;;
+        --no-audio-files)
+            USE_AUDIO_FILES="false"
+            shift
+            ;;
         --no-archive-files)
             USE_ARCHIVE_FILES="false"
             shift
@@ -209,6 +227,9 @@ find_files_without \
     "use_package_files=$USE_PACKAGE_FILES" \
     "use_web_files=$USE_WEB_FILES" \
     "use_media_files=$USE_MEDIA_FILES" \
+    "use_image_files=$USE_IMAGE_FILES" \
+    "use_video_files=$USE_VIDEO_FILES" \
+    "use_audio_files=$USE_AUDIO_FILES" \
     "use_archive_files=$USE_ARCHIVE_FILES" \
     "use_database_files=$USE_DATABASE_FILES" \
     "use_config_files=$USE_CONFIG_FILES" \

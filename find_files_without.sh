@@ -7,7 +7,12 @@ text_files="md|txt|log|rst|doc|docx|pdf"
 package_files="apkg|package.json|pyproject.toml|Cargo.toml|Pipfile|composer.json|requirements.txt"
 config_files="properties|yaml|yml|toml|ini|conf|cfg|config|properties|settings|preferences|options|options.json|options.yaml|options.yml|options.toml"
 web_files="html|css|js|jsx|ts|tsx|scss|sass"
+
 media_files="aac|avif|aif|mp3.asd|mp3|reapeaks|reapindex|mp4|m4a|avi|mov|wmv|flv|mpeg|mpg|m4v|mkv|webm|gif|jpg|jpeg|png|svg|ico|webp|heic|heif|wav|mp4.part|mp4.ytdl"
+image_files="jpg|jpeg|png|svg|ico|webp|heic|heif"
+video_files="mp4|m4a|avi|mov|wmv|flv|mpeg|mpg|m4v|mkv|webm"
+audio_files="aac|mp3|reapeaks|reapindex|wav|mp4.part|mp4.ytdl"
+
 archive_files="tgz|.tar.gz|tar.bz2|tar.xz|tar.7z|tar.rar|tar.gz|tar.bz2|tar.xz|tar.7z|tar.rar|bak|zip|tar|gz|bz2|rar|7z|iso|dmg|pkg|apkg|deb|rpm|exe|msi|app|deb|rpm|exe|msi|app"
 database_files="db|sqlite|sqlite3|sqlite2|sqlite2.db|sqlite3.db|sqlite2.db-journal|sqlite3.db-journal"
 diagram_files="drawio|concept|excalidraw"
@@ -31,12 +36,16 @@ find_files_without() {
     local use_package_files="true"
     local use_web_files="true"
     local use_media_files="true"  # New option for media files
+    local use_image_files="true"  # New option for image files
+    local use_video_files="true"  # New option for video files
+    local use_audio_files="true"  # New option for audio files
     local use_archive_files="true"
     local use_database_files="true"
     local use_config_files="true"  # New option for config files
     local use_diagram_files="true"  # New option for diagram files
     local use_markup_files="true"  # New option for markup files
     local use_apple_config_files="true"  # New option for Apple config files
+    local use_windows_files="true"  # New option for Windows files
     local use_programming_files="true"  # New option for programming files
     local ansi="true"
     local print_screen="true"  # New argument for printing to screen
@@ -57,6 +66,9 @@ find_files_without() {
             use_package_files=*) use_package_files="${arg#*=}" ;;
             use_web_files=*) use_web_files="${arg#*=}" ;;
             use_media_files=*) use_media_files="${arg#*=}" ;;  # New case for media files
+            use_image_files=*) use_image_files="${arg#*=}" ;;  # New case for image files
+            use_video_files=*) use_video_files="${arg#*=}" ;;  # New case for video files
+            use_audio_files=*) use_audio_files="${arg#*=}" ;;  # New case for audio files
             use_archive_files=*) use_archive_files="${arg#*=}" ;;
             use_database_files=*) use_database_files="${arg#*=}" ;;
             use_config_files=*) use_config_files="${arg#*=}" ;;  # New case for config files
@@ -64,6 +76,7 @@ find_files_without() {
             use_markup_files=*) use_markup_files="${arg#*=}" ;;  # New case for markup files
             use_apple_config_files=*) use_apple_config_files="${arg#*=}" ;;  # New case for Apple config files
             use_programming_files=*) use_programming_files="${arg#*=}" ;;  # New case for programming files
+            use_windows_files=*) use_windows_files="${arg#*=}" ;;  # New case for Windows files
             ansi=*) ansi="${arg#*=}" ;;
             print_screen=*) print_screen="${arg#*=}" ;;
             verbose=*) verbose="${arg#*=}" ;;
@@ -118,6 +131,18 @@ find_files_without() {
         [[ -n "$extensions" ]] && extensions="${extensions}|"
         extensions="${extensions}${media_files}"
     fi
+    if [[ "$use_image_files" == "false" ]]; then
+        [[ -n "$extensions" ]] && extensions="${extensions}|"
+        extensions="${extensions}${image_files}"
+    fi
+    if [[ "$use_video_files" == "false" ]]; then
+        [[ -n "$extensions" ]] && extensions="${extensions}|"
+        extensions="${extensions}${video_files}"
+    fi
+    if [[ "$use_audio_files" == "false" ]]; then
+        [[ -n "$extensions" ]] && extensions="${extensions}|"
+        extensions="${extensions}${audio_files}"
+    fi
     if [[ "$use_archive_files" == "false" ]]; then
         [[ -n "$extensions" ]] && extensions="${extensions}|"
         extensions="${extensions}${archive_files}"
@@ -141,6 +166,10 @@ find_files_without() {
     if [[ "$use_apple_config_files" == "false" ]]; then
         [[ -n "$extensions" ]] && extensions="${extensions}|"
         extensions="${extensions}${apple_config_files}"
+    fi
+    if [[ "$use_windows_files" == "false" ]]; then
+        [[ -n "$extensions" ]] && extensions="${extensions}|"
+        extensions="${extensions}${windows_files}"
     fi
     if [[ "$use_programming_files" == "false" ]]; then
         [[ -n "$extensions" ]] && extensions="${extensions}|"
