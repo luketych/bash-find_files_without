@@ -4,17 +4,16 @@
 
 test_file_sizes() {
     echo "Testing file size filtering..."
-    
-    ../fwo --min-size 500K --search-dir test_files < /dev/null
+    "${FWO_BIN}" --min-size 500K --search-dir test_files < /dev/null
     assert_success "Min size filtering"
     
-    ../fwo --max-size 5K --search-dir test_files < /dev/null
+    "${FWO_BIN}" --max-size 5K --search-dir test_files < /dev/null
     assert_success "Max size filtering"
 }
 
 test_extension_filtering() {
     echo "Testing extension filtering..."
-    ../fwo -X "mp3,mp4,jpg" --search-dir test_files < /dev/null
+    "${FWO_BIN}" -X "mp3,mp4,jpg" --search-dir test_files < /dev/null
     assert_success "Extension filtering"
 }
 

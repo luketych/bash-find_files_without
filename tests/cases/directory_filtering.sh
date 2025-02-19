@@ -4,13 +4,13 @@
 
 test_directory_filtering() {
     echo "Testing directory filtering..."
-    ../fwo -D "node_modules" --search-dir test_files < /dev/null
+    "${FWO_BIN}" -D "node_modules" --search-dir test_files < /dev/null
     assert_success "Directory filtering"
 }
 
 test_deep_search() {
     echo "Testing deep directory searching..."
-    ../fwo --depth 5 --search-dir test_files < /dev/null
+    "${FWO_BIN}" --depth 5 --search-dir test_files < /dev/null
     assert_success "Deep search"
 }
 

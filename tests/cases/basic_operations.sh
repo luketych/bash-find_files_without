@@ -4,7 +4,7 @@
 
 test_basic_find() {
     echo "Testing basic file finding..."
-    ../fwo --no-text-files --no-image-files --search-dir test_files < /dev/null
+    "${FWO_BIN}" --no-text-files --no-image-files --search-dir test_files < /dev/null
     assert_success "Basic find test"
 }
 
@@ -13,7 +13,7 @@ test_search_directories() {
     mkdir -p other_test_dir
     touch other_test_dir/test_file.txt
     
-    ../fwo --search-dir other_test_dir < /dev/null
+    "${FWO_BIN}" --search-dir other_test_dir < /dev/null
     assert_success "Search directory test"
 }
 

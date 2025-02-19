@@ -4,7 +4,7 @@
 
 test_substring_filtering() {
     echo "Testing substring filtering..."
-    ../fwo -S "TEMP,backup" --search-dir test_files < /dev/null
+    "${FWO_BIN}" -S "TEMP,backup" --search-dir test_files < /dev/null
     assert_success "Substring filtering"
 }
 
