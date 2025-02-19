@@ -1,13 +1,19 @@
 {
+    "version": "0.2.0",
     "configurations": [
-    {
-        "type": "bashdb",
-        "request": "launch",
-        "name": "Debug debug.sh",
-        "cwd": "${workspaceFolder}",
-        "program": "${workspaceFolder}/debug.sh",
-        "args": [],
-        "terminalKind": "integrated"
-    }
+        {
+            "type": "bashdb",
+            "request": "launch",
+            "name": "Run Tests",
+            "program": "${workspaceFolder}/tests/run_tests.sh",
+            "cwd": "${workspaceFolder}/tests"
+        },
+        {
+            "type": "bashdb",
+            "request": "launch",
+            "name": "Debug fwo",
+            "program": "${workspaceFolder}/fwo",
+            "args": ["--search-dir", ".", "--verbose"]
+        }
     ]
 }
