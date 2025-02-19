@@ -14,6 +14,8 @@ usage() {
     echo "  -D, --directories DIR   Directories to exclude"
     echo "  -S, --substrings STR    Substrings to exclude"
     echo "  -s|--search-dir DIR    Directory to search (default: .)"
+    echo "      --max-size SIZE     Maximum file size to include"
+    echo "      --min-size SIZE     Minimum file size to include"
     echo "      --temp-file FILE    Output file for results"
     echo "      --force-create-temp Force create temp directories"
     echo "      --step              Enable step-by-step execution"
@@ -54,6 +56,8 @@ EXTENSIONS=""
 DIRECTORIES=""
 SUBSTRINGS=""
 SEARCH_DIR="."
+MAX_SIZE=""
+MIN_SIZE=""
 USE_TEXT_FILES="true"
 USE_PACKAGE_FILES="true"
 USE_WEB_FILES="true"
@@ -120,6 +124,20 @@ while [[ "$#" -gt 0 ]]; do
                 show_option_error "--search-dir"
             fi
             SEARCH_DIR="$2"
+            shift 2
+            ;;
+        --max-size)
+            if [[ -z "$2" || "$2" =~ ^- ]]; then
+                show_option_error "--max-size"
+            fi
+            MAX_SIZE="$2"
+            shift 2
+            ;;
+        --min-size)
+            if [[ -z "$2" || "$2" =~ ^- ]]; then
+                show_option_error "--min-size"
+            fi
+            MIN_SIZE="$2"
             shift 2
             ;;
         --temp-file)
@@ -242,4 +260,6 @@ find_files_without \
     "print_screen=$PRINT_SCREEN" \
     "verbose=$VERBOSE" \
     "force_create_tmp=$FORCE_CREATE_TMP" \
-    "step=$STEP"
+    "step=$STEP" \
+    "max_size=$MAX_SIZE" \
+    "min_size=$MIN_SIZE"

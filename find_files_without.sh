@@ -32,6 +32,8 @@ find_files_without() {
     local depth="2"
     local directories=""
     local substrings=""
+    local min_size=""  # New variable for minimum file size
+    local max_size=""  # New variable for maximum file size
     local use_text_files="true"
     local use_package_files="true"
     local use_web_files="true"
@@ -62,6 +64,8 @@ find_files_without() {
 	        extensions=*) extensions="${arg#*=}" ;;
             directories=*) directories="${arg#*=}" ;;
             substrings=*) substrings="${arg#*=}" ;;
+            min_size=*) min_size="${arg#*=}" ;;  # New case for minimum size
+            max_size=*) max_size="${arg#*=}" ;;  # New case for maximum size
             use_text_files=*) use_text_files="${arg#*=}" ;;
             use_package_files=*) use_package_files="${arg#*=}" ;;
             use_web_files=*) use_web_files="${arg#*=}" ;;
@@ -182,6 +186,11 @@ find_files_without() {
 
     # Build the command dynamically
     local cmd="fd -d $depth -t f --no-hidden -0 . $search_dir"
+    
+    # Add size filters if specified
+    [[ -n "$min_size" ]] && cmd+=" --size +${min_size}"
+    [[ -n "$max_size" ]] && cmd+=" --size -${max_size}"
+    
     [[ -n "$extensions" ]] && cmd+=" | egrep -zv '\.(${extensions})(~)?$' 2>/dev/null"
     [[ -n "$directories" ]] && cmd+=" | egrep -zv '(${directories})/$1' 2>/dev/null"
     [[ -n "$substrings" ]] && cmd+=" | egrep -zv '(${substrings})' 2>/dev/null"
