@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 # Print usage information
 usage() {
@@ -19,22 +19,23 @@ usage() {
     echo "      --temp-file FILE    Output file for results"
     echo "      --force-create-temp Force create temp directories"
     echo "      --step              Enable step-by-step execution"
-    echo "      --no-text-files     Disable text file exclusions"
-    echo "      --no-package-files  Disable package file exclusions"
-    echo "      --no-web-files      Disable web file exclusions"
-    echo "      --no-media-files    Disable media file exclusions"
-    echo "      --no-image-files    Disable image file exclusions"
-    echo "      --no-video-files    Disable video file exclusions"
-    echo "      --no-audio-files    Disable audio file exclusions"
-    echo "      --no-archive-files  Disable archive file exclusions"
-    echo "      --no-database-files Disable database file exclusions"
-    echo "      --no-config-files   Disable config file exclusions"
-    echo "      --no-diagram-files  Disable diagram file exclusions"
-    echo "      --no-markup-files   Disable markup file exclusions"
-    echo "      --no-apple-config-files Disable Apple config file exclusions"
-    echo "      --no-programming-files  Disable programming file exclusions"
-    echo "      --no-windows-files  Disable Windows file exclusions"
+    echo "      --no-text-files     Filter out text files"
+    echo "      --no-package-files  Filter out package files"
+    echo "      --no-web-files      Filter out web files"
+    echo "      --no-media-files    Filter out media files"
+    echo "      --no-image-files    Filter out image files"
+    echo "      --no-video-files    Filter out video files"
+    echo "      --no-audio-files    Filter out audio files"
+    echo "      --no-archive-files  Filter out archive files"
+    echo "      --no-database-files Filter out database files"
+    echo "      --no-config-files   Filter out config files"
+    echo "      --no-diagram-files  Filter out diagram files"
+    echo "      --no-markup-files   Filter out markup files"
+    echo "      --no-apple-config-files Filter out Apple config files"
+    echo "      --no-programming-files  Filter out programming files"
+    echo "      --no-windows-files  Filter out Windows files"
     echo "      --where             Show script location"
+    echo "      --separator SEP     Separator for results"
     echo "  -h, --help              Show this help message"
 }
 
@@ -58,23 +59,24 @@ SUBSTRINGS=""
 SEARCH_DIR="."
 MAX_SIZE=""
 MIN_SIZE=""
-USE_TEXT_FILES="true"
-USE_PACKAGE_FILES="true"
-USE_WEB_FILES="true"
-USE_MEDIA_FILES="true"
-USE_IMAGE_FILES="true"
-USE_VIDEO_FILES="true"
-USE_AUDIO_FILES="true"
-USE_ARCHIVE_FILES="true"
-USE_DATABASE_FILES="true"
-USE_CONFIG_FILES="true"
-USE_DIAGRAM_FILES="true"
-USE_MARKUP_FILES="true"
-USE_APPLE_CONFIG_FILES="true"
-USE_PROGRAMMING_FILES="true"
-USE_WINDOWS_FILES="true"
+FILTER_OUT_TEXT_FILES="false"
+FILTER_OUT_PACKAGE_FILES="false"
+FILTER_OUT_WEB_FILES="false"
+FILTER_OUT_MEDIA_FILES="false"
+FILTER_OUT_IMAGE_FILES="false"
+FILTER_OUT_VIDEO_FILES="false"
+FILTER_OUT_AUDIO_FILES="false"
+FILTER_OUT_ARCHIVE_FILES="false"
+FILTER_OUT_DATABASE_FILES="false"
+FILTER_OUT_CONFIG_FILES="false"
+FILTER_OUT_DIAGRAM_FILES="false"
+FILTER_OUT_MARKUP_FILES="false"
+FILTER_OUT_APPLE_CONFIG_FILES="false"
+FILTER_OUT_PROGRAMMING_FILES="false"
+FILTER_OUT_WINDOWS_FILES="false"
 FORCE_CREATE_TMP="false"
 STEP="false"
+SEPARATOR="\n"  # Default to newline
 
 # Parse command line options
 while [[ "$#" -gt 0 ]]; do
@@ -160,64 +162,71 @@ while [[ "$#" -gt 0 ]]; do
             exit 0
             ;;
         --no-text-files)
-            USE_TEXT_FILES="false"
+            FILTER_OUT_TEXT_FILES="true"
             shift
             ;;
         --no-package-files)
-            USE_PACKAGE_FILES="false"
+            FILTER_OUT_PACKAGE_FILES="true"
             shift
             ;;
         --no-web-files)
-            USE_WEB_FILES="false"
+            FILTER_OUT_WEB_FILES="true"
             shift
             ;;
         --no-media-files)
-            USE_MEDIA_FILES="false"
+            FILTER_OUT_MEDIA_FILES="true"
             shift
             ;;
         --no-image-files)
-            USE_IMAGE_FILES="false"
+            FILTER_OUT_IMAGE_FILES="true"
             shift
             ;;
         --no-video-files)
-            USE_VIDEO_FILES="false"
+            FILTER_OUT_VIDEO_FILES="true"
             shift
             ;;
         --no-audio-files)
-            USE_AUDIO_FILES="false"
+            FILTER_OUT_AUDIO_FILES="true"
             shift
             ;;
         --no-archive-files)
-            USE_ARCHIVE_FILES="false"
+            FILTER_OUT_ARCHIVE_FILES="true"
             shift
             ;;
         --no-database-files)
-            USE_DATABASE_FILES="false"
+            FILTER_OUT_DATABASE_FILES="true"
             shift
             ;;
         --no-config-files)
-            USE_CONFIG_FILES="false"
+            FILTER_OUT_CONFIG_FILES="true"
             shift
             ;;
         --no-diagram-files)
-            USE_DIAGRAM_FILES="false"
+            FILTER_OUT_DIAGRAM_FILES="true"
             shift
             ;;
         --no-markup-files)
-            USE_MARKUP_FILES="false"
+            FILTER_OUT_MARKUP_FILES="true"
             shift
             ;;
         --no-apple-config-files)
-            USE_APPLE_CONFIG_FILES="false"
+            FILTER_OUT_APPLE_CONFIG_FILES="true"
             shift
             ;;
         --no-programming-files)
-            USE_PROGRAMMING_FILES="false"
+            FILTER_OUT_PROGRAMMING_FILES="true"
             shift
             ;;
         --no-windows-files)
-            USE_WINDOWS_FILES="false"
+            FILTER_OUT_WINDOWS_FILES="true"
             shift
+            ;;
+        --separator)
+            if [[ -z "$2" || "$2" =~ ^- ]]; then
+                show_option_error "--separator"
+            fi
+            SEPARATOR="$2"
+            shift 2
             ;;
         -h|--help)
             usage
@@ -241,25 +250,26 @@ find_files_without \
     "extensions=$EXTENSIONS" \
     "directories=$DIRECTORIES" \
     "substrings=$SUBSTRINGS" \
-    "use_text_files=$USE_TEXT_FILES" \
-    "use_package_files=$USE_PACKAGE_FILES" \
-    "use_web_files=$USE_WEB_FILES" \
-    "use_media_files=$USE_MEDIA_FILES" \
-    "use_image_files=$USE_IMAGE_FILES" \
-    "use_video_files=$USE_VIDEO_FILES" \
-    "use_audio_files=$USE_AUDIO_FILES" \
-    "use_archive_files=$USE_ARCHIVE_FILES" \
-    "use_database_files=$USE_DATABASE_FILES" \
-    "use_config_files=$USE_CONFIG_FILES" \
-    "use_diagram_files=$USE_DIAGRAM_FILES" \
-    "use_markup_files=$USE_MARKUP_FILES" \
-    "use_apple_config_files=$USE_APPLE_CONFIG_FILES" \
-    "use_programming_files=$USE_PROGRAMMING_FILES" \
-    "use_windows_files=$USE_WINDOWS_FILES" \
+    "filter_out_text_files=$FILTER_OUT_TEXT_FILES" \
+    "filter_out_package_files=$FILTER_OUT_PACKAGE_FILES" \
+    "filter_out_web_files=$FILTER_OUT_WEB_FILES" \
+    "filter_out_media_files=$FILTER_OUT_MEDIA_FILES" \
+    "filter_out_image_files=$FILTER_OUT_IMAGE_FILES" \
+    "filter_out_video_files=$FILTER_OUT_VIDEO_FILES" \
+    "filter_out_audio_files=$FILTER_OUT_AUDIO_FILES" \
+    "filter_out_archive_files=$FILTER_OUT_ARCHIVE_FILES" \
+    "filter_out_database_files=$FILTER_OUT_DATABASE_FILES" \
+    "filter_out_config_files=$FILTER_OUT_CONFIG_FILES" \
+    "filter_out_diagram_files=$FILTER_OUT_DIAGRAM_FILES" \
+    "filter_out_markup_files=$FILTER_OUT_MARKUP_FILES" \
+    "filter_out_apple_config_files=$FILTER_OUT_APPLE_CONFIG_FILES" \
+    "filter_out_programming_files=$FILTER_OUT_PROGRAMMING_FILES" \
+    "filter_out_windows_files=$FILTER_OUT_WINDOWS_FILES" \
     "ansi=$ANSI" \
     "print_screen=$PRINT_SCREEN" \
     "verbose=$VERBOSE" \
     "force_create_tmp=$FORCE_CREATE_TMP" \
     "step=$STEP" \
     "max_size=$MAX_SIZE" \
-    "min_size=$MIN_SIZE"
+    "min_size=$MIN_SIZE" \
+    "separator=$SEPARATOR"

@@ -4,9 +4,10 @@
         {
             "type": "bashdb",
             "request": "launch",
-            "name": "Debug fwo",
-            "program": "${workspaceFolder}/fwo",
-            "args": ["--search-dir", ".", "--verbose"]
+            "name": "Run debug.sh",
+            "program": "${workspaceFolder}/debug.sh",
+            "cwd": "${workspaceFolder}",
+            "terminalKind": "integrated"
         },
         {
             "type": "bashdb",

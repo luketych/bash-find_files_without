@@ -41,24 +41,29 @@ fi
 
 echo "Listing files..."
 
-find_files_without \
+if ! find_files_without \
 	search_dir="\/Users\/luketych\/Downloads" \
-	dev_null="false" \
+	print_screen="false" \
 	depth="3" \
 	extensions="csv|toml" \
-	directories="talon-gaze-ocr|talon_axkit" \
-	substrings="LICENSE" \
 	\
-	use_text_files="true" \
-	use_package_files="false" \
-	use_web_files="true" \
+	\
+	filter_out_text_files="false" \
+	filter_out_package_files="false" \
+	filter_out_web_files="false" \
     \
     ansi="true" \
+    print_screen="true" \
     \
-    use_media_files="false"
+    filter_out_media_files="false" \
+    \
+    separator="\0"; then
+    echo "Error: find_files_without command failed"
+    exit 1
+fi
 
 
-debug_result=$(cat ./tmp/result.log 2>/dev/null)
+watch_result=$(cat ./tmp/result.log 2>/dev/null)
 
 
 

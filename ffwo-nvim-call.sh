@@ -13,9 +13,9 @@ find_files_without \
 	directories="talon-gaze-ocr|talon_axkit" \
 	substrings="LICENSE" \
 	\
-	use_text_files="true" \
-	use_package_files="false" \
-	use_web_files="true"
+	filter_out_text_files="false" \
+	filter_out_package_files="true" \
+	filter_out_web_files="false"
 
 
 echo "done"
