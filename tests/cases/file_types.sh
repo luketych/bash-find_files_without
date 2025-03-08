@@ -12,7 +12,7 @@ test_media_filtering() {
         return 1
     fi
     echo "Testing media file filtering..."
-    "${FWO_BIN}" --no-media-files --search-dir test_files < /dev/null
+    "${FWO_BIN}" --no-media-files --search-dir $(dirname "$0")/test_files < /dev/null
     assert_success "Media file filtering"
 }
 
@@ -22,7 +22,7 @@ test_programming_filtering() {
         return 1
     fi
     echo "Testing programming file filtering..."
-    "${FWO_BIN}" --no-programming-files --search-dir test_files < /dev/null
+    "${FWO_BIN}" --no-programming-files --search-dir $(dirname "$0")/test_files < /dev/null
     assert_success "Programming file filtering"
 }
 

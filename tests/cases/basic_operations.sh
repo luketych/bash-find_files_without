@@ -4,7 +4,9 @@
 
 test_basic_find() {
     echo "Testing basic file finding..."
-    "${FWO_BIN}" --no-text-files --no-image-files --search-dir test_files < /dev/null
+    local cmd="${FWO_BIN} --no-text-files --no-image-files --search-dir $(dirname "$0")/test_files < /dev/null"
+    echo "Running command: $cmd"
+    eval "$cmd"
     assert_success "Basic find test"
 }
 

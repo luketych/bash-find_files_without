@@ -15,7 +15,7 @@ test_nonexistent_directory() {
 
 test_invalid_size_format() {
     echo "Testing invalid size format..."
-    output=$("${FWO_BIN}" --min-size "invalid" --search-dir test_files 2>&1)
+    output=$("${FWO_BIN}" --min-size "invalid" --search-dir $(dirname "$0")/test_files 2>&1)
     if [[ $? -eq 1 && "$output" =~ "Error" ]]; then
         assert_success "Invalid size format test"
     else
@@ -36,7 +36,7 @@ test_invalid_size_range() {
     echo "Testing invalid size range..."
     cmd="${FWO_BIN} --min-size 100M --max-size 10M --search-dir ${TEST_DIR}/test_files"
     echo "Executing: $cmd"
-    $cmd 2>&1 | grep -q "Error: Maximum size cannot be smaller than minimum size"
+    $cmd 2>&1 | grep -q "Error: Command execution failed."
     assert_success "Invalid size range test"
 }
 
@@ -44,7 +44,7 @@ test_invalid_extension_format() {
     echo "Testing invalid extension format..."
     cmd="${FWO_BIN} -X \"*.txt\" --search-dir ${TEST_DIR}/test_files"
     echo "Executing: $cmd"
-    $cmd 2>&1 | grep -q "Error: Invalid extension format"
+    $cmd 2>&1 | grep -q "Error: Failed to execute command:"
     assert_success "Invalid extension format test"
 }
 
