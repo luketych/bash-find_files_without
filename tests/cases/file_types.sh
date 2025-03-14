@@ -12,7 +12,11 @@ test_media_filtering() {
         return 1
     fi
     echo "Testing media file filtering..."
+<<<<<<< HEAD
     "${SCRIPT_BIN}" --no-media-files --search-dir $(dirname "$0")/test_files < /dev/null
+=======
+    "${FWO_BIN}" --no-media-files --search-dir $(dirname "$0")/test_files < /dev/null
+>>>>>>> 1ad8a2e71b00bcb5bea29f490d19ba19ef4a955c
     assert_success "Media file filtering"
 }
 
@@ -22,7 +26,11 @@ test_programming_filtering() {
         return 1
     fi
     echo "Testing programming file filtering..."
+<<<<<<< HEAD
     "${SCRIPT_BIN}" --no-programming-files --search-dir $(dirname "$0")/test_files < /dev/null
+=======
+    "${FWO_BIN}" --no-programming-files --search-dir $(dirname "$0")/test_files < /dev/null
+>>>>>>> 1ad8a2e71b00bcb5bea29f490d19ba19ef4a955c
     assert_success "Programming file filtering"
 }
 

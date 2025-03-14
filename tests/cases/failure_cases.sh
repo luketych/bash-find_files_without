@@ -19,7 +19,11 @@ test_nonexistent_directory() {
 
 test_invalid_size_format() {
     echo "Testing invalid size format..."
+<<<<<<< HEAD
     output=$("${SCRIPT_BIN}" --min-size "invalid" --search-dir $(dirname "$0")/test_files 2>&1)
+=======
+    output=$("${FWO_BIN}" --min-size "invalid" --search-dir $(dirname "$0")/test_files 2>&1)
+>>>>>>> 1ad8a2e71b00bcb5bea29f490d19ba19ef4a955c
     if [[ $? -eq 1 && "$output" =~ "Error" ]]; then
         assert_success "Invalid size format test"
     else
@@ -53,6 +57,7 @@ test_negative_depth() {
 
 test_invalid_size_range() {
     echo "Testing invalid size range..."
+<<<<<<< HEAD
 
     # Define command as an array
     cmd=("$SCRIPT_BIN" "--min-size" "100M" "--max-size" "10M" "--search-dir" "$TEST_DIR/test_files")
@@ -70,11 +75,17 @@ test_invalid_size_range() {
         echo "Output: $output"
     fi
 
+=======
+    cmd="${FWO_BIN} --min-size 100M --max-size 10M --search-dir ${TEST_DIR}/test_files"
+    echo "Executing: $cmd"
+    $cmd 2>&1 | grep -q "Error: Command execution failed."
+>>>>>>> 1ad8a2e71b00bcb5bea29f490d19ba19ef4a955c
     assert_success "Invalid size range test"
 }
 
 test_invalid_extension_format() {
     echo "Testing invalid extension format..."
+<<<<<<< HEAD
     
     # Define command as an array to correctly pass arguments
     cmd=("$SCRIPT_BIN" "-X" "*.txt" "--search-dir" "$TEST_DIR/test_files")
@@ -92,6 +103,11 @@ test_invalid_extension_format() {
         echo "Output: $output"
     fi
     
+=======
+    cmd="${FWO_BIN} -X \"*.txt\" --search-dir ${TEST_DIR}/test_files"
+    echo "Executing: $cmd"
+    $cmd 2>&1 | grep -q "Error: Failed to execute command:"
+>>>>>>> 1ad8a2e71b00bcb5bea29f490d19ba19ef4a955c
     assert_success "Invalid extension format test"
 }
 

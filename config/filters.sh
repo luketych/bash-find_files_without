@@ -1,5 +1,6 @@
 #!/opt/homebrew/bin/bash
 
+
 # Extension group definitions
 # Each variable defines a set of file extensions to filter
 
@@ -47,3 +48,4 @@ windows_files="dll|exe|msi|bat|cmd|ps1|reg|sys|inf|cab"
 
 # Programming language files
 programming_files="py|js|jsx|ts|rb|php|cjs|sh|bash|zsh|fish" 
+
