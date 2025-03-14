@@ -4,8 +4,12 @@
 
 echo "Running: [[${BASH_SOURCE[0]##*/}]]"
 
-if [ -z "${FWO_BIN}" ]; then
-    export FWO_BIN="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/fwo"
+ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$BASH_SOURCE")")")
+TEST_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
+
+
+if [ -z "${SCRIPT_BIN}" ]; then
+    export SCRIPT_BIN="$(cd "$ROOT_DIR" && pwd)/index"
 fi
 
 # Parse command line arguments
@@ -24,17 +28,17 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Source all test files
-source "$(dirname "$0")/test_utils.sh"
-source "$(dirname "$0")/cases/basic_operations.sh"
-source "$(dirname "$0")/cases/file_filtering.sh"
-source "$(dirname "$0")/cases/directory_filtering.sh"
-source "$(dirname "$0")/cases/content_filtering.sh"
-source "$(dirname "$0")/cases/file_types.sh"
-source "$(dirname "$0")/cases/separator_tests.sh"
+source "$TEST_DIR/test_utils.sh"
+source "$TEST_DIR/cases/basic_operations.sh"
+source "$TEST_DIR/cases/file_filtering.sh"
+source "$TEST_DIR/cases/directory_filtering.sh"
+source "$TEST_DIR/cases/content_filtering.sh"
+source "$TEST_DIR/cases/file_types.sh"
+source "$TEST_DIR/cases/separator_tests.sh"
 
 # Source failure cases by default unless skipped
 if [[ ! " ${SKIP_TESTS[@]} " =~ " failure_cases " ]]; then
-    source "$(dirname "$0")/cases/failure_cases.sh"
+    source "$TEST_DIR/cases/failure_cases.sh"
 fi
 
 # Run all test suites

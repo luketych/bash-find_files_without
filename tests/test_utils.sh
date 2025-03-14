@@ -66,7 +66,9 @@ create_test_files() {
     echo "custom" > "${TEST_DIR}/test_files/custom.data"
     
     # Create directory for separator tests
-    mkdir -p "${TEST_DIR}/test_files/{newline_test,null_test,mixed_test}"
+    mkdir -p "${TEST_DIR}/test_files/newline_test"
+    mkdir -p "${TEST_DIR}/test_files/null_test"
+    mkdir -p "${TEST_DIR}/test_files/mixed_test"
     
     # Create files with spaces (using quotes)
     touch "${TEST_DIR}/test_files/null_test/file with spaces.txt"

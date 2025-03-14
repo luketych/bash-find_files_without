@@ -2,110 +2,59 @@
 
 # Set bash to exit on pipe failures
 set -o pipefail
+CONFIG_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
 
-# Define extension groups using simple variables
-
-text_files="md|txt|log|rst|doc|docx|pdf"
-package_files="apkg|package.json|pyproject.toml|Cargo.toml|Pipfile|composer.json|requirements.txt"
-config_files="properties|yaml|yml|toml|ini|conf|cfg|config|properties|settings|preferences|options|options.json|options.yaml|options.yml|options.toml"
-web_files="html|css|js|jsx|ts|tsx|scss|sass"
-
-media_files="aac|avif|aif|mp3.asd|mp3|reapeaks|reapindex|mp4|m4a|avi|mov|wmv|flv|mpeg|mpg|m4v|mkv|webm|gif|jpg|jpeg|png|svg|ico|webp|heic|heif|wav|mp4.part|mp4.ytdl"
-image_files="jpg|jpeg|png|svg|ico|webp|heic|heif"
-video_files="mp4|m4a|avi|mov|wmv|flv|mpeg|mpg|m4v|mkv|webm"
-audio_files="aac|mp3|reapeaks|reapindex|wav|mp4.part|mp4.ytdl"
-
-archive_files="tgz|.tar.gz|tar.bz2|tar.xz|tar.7z|tar.rar|tar.gz|tar.bz2|tar.xz|tar.7z|tar.rar|bak|zip|tar|gz|bz2|rar|7z|iso|dmg|pkg|apkg|deb|rpm|exe|msi|app|deb|rpm|exe|msi|app"
-database_files="db|sqlite|sqlite3|sqlite2|sqlite2.db|sqlite3.db|sqlite2.db-journal|sqlite3.db-journal"
-diagram_files="drawio|concept|excalidraw"
-markup_files="md|xml"
-apple_config_files="plist"
-windows_files="dll|exe|msi|bat|cmd|ps1|reg|sys|inf|cab"
-programming_files="py|js|jsx|ts|rb|php|cjs|sh|bash|zsh|fish"
+source "${CONFIG_DIR}/config/filters.sh"
+source "${CONFIG_DIR}/pipeline/a.sh"
+source "${CONFIG_DIR}/pipeline/b.sh"
 
 # find_files_without - Search for files while excluding specific extensions, directories, and substrings
 #
 # This function searches for files in a directory tree while allowing fine-grained control
 # over which types of files to exclude based on extensions, directories, and substrings.
 # It supports filtering by file size and various output options.
-#
-# Arguments:
-#   search_dir - Base directory to start search from (default: ".")
-#   depth - Maximum directory depth to search (default: "2")
-#   extensions - Additional file extensions to exclude (pipe-separated)
-#   directories - Directory names to exclude (pipe-separated)
-#   substrings - Substrings to exclude from filenames (pipe-separated)
-#   min_size - Minimum file size filter
-#   max_size - Maximum file size filter
-#   filter_out_text_files - Whether to exclude common text files (default: true)
-#   filter_out_package_files - Whether to exclude package management files (default: true)
-#   filter_out_web_files - Whether to exclude web development files (default: true)
-#   filter_out_media_files - Whether to exclude media files (default: true)
-#   filter_out_image_files - Whether to exclude image files (default: true)
-#   filter_out_video_files - Whether to exclude video files (default: true)
-#   filter_out_audio_files - Whether to exclude audio files (default: true)
-#   filter_out_archive_files - Whether to exclude archive files (default: true)
-#   filter_out_database_files - Whether to exclude database files (default: true)
-#   filter_out_config_files - Whether to exclude config files (default: true)
-#   filter_out_diagram_files - Whether to exclude diagram files (default: true)
-#   filter_out_markup_files - Whether to exclude markup files (default: true)
-#   filter_out_apple_config_files - Whether to exclude Apple config files (default: true)
-#   filter_out_windows_files - Whether to exclude Windows files (default: true)
-#   filter_out_programming_files - Whether to exclude programming files (default: true)
-#   ansi - Enable/disable ANSI colors in output (default: true)
-#   print_screen - Print results to screen (default: true)
-#   verbose - Enable verbose output (default: false)
-#   force_create_tmp - Create temp directory without prompting (default: false)
-#   step - Enable step-by-step execution (default: false)
-#   separator - Output separator character, must be either \0 or \n (default: \0)
-#
-# Returns:
-#   0 on success, 1 on failure
-#
-# Outputs:
-#   List of found files, formatted using eza
-#   Optionally writes results to a temp file if specified
-find_files_without() {
+find_files_without() { 
     local script_dir="$(dirname "${BASH_SOURCE[0]}")"
     local temp_result_file="$script_dir/tmp/result.log"
     local temp_result_file_colored="$script_dir/tmp/result_colored.log"
 
-    local search_dir="."  # Default to current directory
-    local depth="2"  # Default depth
-    local extensions=""
-    local depth="2"
-    local directories=""
-    local substrings=""
-    local min_size=""  # New variable for minimum file size
-    local max_size=""  # New variable for maximum file size
-    local filter_out_text_files="false"
-    local filter_out_package_files="false"
-    local filter_out_web_files="false"
-    local filter_out_media_files="false"  # New option for media files
-    local filter_out_image_files="false"  # New option for image files
-    local filter_out_video_files="false"  # New option for video files
-    local filter_out_audio_files="false"  # New option for audio files
-    local filter_out_archive_files="false"
-    local filter_out_database_files="false"
-    local filter_out_config_files="false"  # New option for config files
-    local filter_out_diagram_files="false"  # New option for diagram files
-    local filter_out_markup_files="false"  # New option for markup files
-    local filter_out_apple_config_files="false"  # New option for Apple config files
-    local filter_out_windows_files="false"  # New option for Windows files
-    local filter_out_programming_files="false"  # New option for programming files
-    local ansi="true"
-    local print_screen="true"  # New argument for printing to screen
-    local verbose="false"  # New verbose option
-    local force_create_tmp="false"  # New option to force create temp directories
-    local step="false"  # New option for step-by-step execution
+    local search_dir="."  # Base directory to start search from (default: ".")
+    local depth="2"  # Maximum directory depth to search (default: "2")
+    local extensions=""  # Additional file extensions to exclude (pipe-separated)
+    local directories=""  # Directory names to exclude (pipe-separated)
+    local substrings=""  # Substrings to exclude from filenames (pipe-separated)
+    local min_size=""  # Minimum file size filter
+    local max_size=""  # Maximum file size filter
+    local filter_out_text_files="false"  # Whether to exclude common text files (default: true)
+    local filter_out_package_files="false"  # Whether to exclude package management files (default: true)
+    local filter_out_web_files="false"  # Whether to exclude web development files (default: true)
+    local filter_out_media_files="false"  # Whether to exclude media files (default: true)
+    local filter_out_image_files="false"  # Whether to exclude image files (default: true)
+    local filter_out_video_files="false"  # Whether to exclude video files (default: true)
+    local filter_out_audio_files="false"  # Whether to exclude audio files (default: true)
+    local filter_out_archive_files="false"  # Whether to exclude archive files (default: true)
+    local filter_out_database_files="false"  # Whether to exclude database files (default: true)
+    local filter_out_config_files="false"  # Whether to exclude config files (default: true)
+    local filter_out_diagram_files="false"  # Whether to exclude diagram files (default: true)
+    local filter_out_markup_files="false"  # Whether to exclude markup files (default: true)
+    local filter_out_apple_config_files="false"  # Whether to exclude Apple config files (default: true)
+    local filter_out_windows_files="false"  # Whether to exclude Windows files (default: true)
+    local filter_out_programming_files="false"  # Whether to exclude programming files (default: true)
+    local ansi="true"  # Enable/disable ANSI colors in output (default: true)
+    local print_screen="true"  # Print results to screen (default: true)
+    local verbose="false"  # Enable verbose output (default: false)
+    local force_create_tmp="false"  # Create temp directory without prompting (default: false)
+    local step="false"  # Enable step-by-step execution (default: false)
     local separator="\0"
-
+    local long="false"  # Enable long format output (default: false)
+    local type="f"  # Filter by type: f (file), d (directory), l (symlink), x (executable)
+    
     # Parse named arguments for backwards compatibility
     for arg in "$@"; do
         case "$arg" in
             search_dir=*) search_dir="${arg#*=}" ;;
             depth=*) depth="${arg#*=}" ;;
-	        extensions=*) extensions="${arg#*=}" ;;
+	          extensions=*) extensions="${arg#*=}" ;;
             directories=*) directories="${arg#*=}" ;;
             substrings=*) substrings="${arg#*=}" ;;
             min_size=*) min_size="${arg#*=}" ;;  # New case for minimum size
@@ -131,6 +80,8 @@ find_files_without() {
             temp_file=*) temp_result_file="${arg#*=}" ;;
             force_create_tmp=*) force_create_tmp="${arg#*=}" ;;
             step=*) step="${arg#*=}" ;;
+            long=*) long="${arg#*=}" ;;
+            type=*) type="${arg#*=}" ;;
             separator=*) 
                 if [[ "${arg#*=}" != "\0" && "${arg#*=}" != "\n" ]]; then
                     echo "❌ Error: separator must be either \0 or \n" >&2
@@ -141,6 +92,14 @@ find_files_without() {
             *) echo "❌ Error: Unknown argument: $arg" >&2 && return 1 ;;
         esac
     done
+
+    # if max_size is less than min_size, return an error
+    if [[ -n "$min_size" && -n "$max_size" ]]; then
+        if [[ "$min_size" -gt "$max_size" ]]; then
+            echo "❌ Error: Minimum size is greater than maximum size." >&2
+            return 1
+        fi
+    fi
 
 
     # Check if temp file directory exists
@@ -233,102 +192,48 @@ find_files_without() {
 
     extensions="${extensions#|}" # Remove leading '|'
 
-    [[ "$step" == "true" ]] && read -p "Press Enter to continue with building the command..."
+    [[ "$step" == "true" ]] && read -p "Press Enter to execute pipeline..."
 
-    # Build the command dynamically
-    local cmd="fd -d $depth -t f --no-hidden"
+    # Get commands from pipeline stages
+    local find_cmd=$(get_find_command \
+        "$depth" \
+        "$search_dir" \
+        "$min_size" \
+        "$max_size" \
+        "$separator" \
+        "$type")
 
+    local filter_cmd=$(get_filter_command \
+        "$extensions" \
+        "$directories" \
+        "$substrings" \
+        "$separator" \
+        "$ansi" \
+        "$long")
 
-    if [[ "$separator" == "\0" ]]; then
-        cmd+=" --print0 . $search_dir"
-    else
-        cmd+=" . $search_dir"
-    fi
+    # Build final command
+    local final_cmd="$find_cmd$filter_cmd"
 
-    #[[ "$print_screen" == "false" ]] && cmd+=" > /dev/null"
-    
-    # Add size filters if specified
-    [[ -n "$min_size" ]] && cmd+=" --size +${min_size}"
-    [[ -n "$max_size" ]] && cmd+=" --size -${max_size}"
-    
-    if [[ -n "$extensions" ]]; then
-        if [[ "$separator" == "\0" ]]; then
-            cmd+=" | egrep -vz '\.(${extensions})(~)?$'"
-        else
-            cmd+=" | egrep -v '\.(${extensions})(~)?$'"
-        fi
-        #[[ "$print_screen" == "false" ]] && cmd+=" > /dev/null"
-    fi
-    
-    if [[ -n "$directories" ]]; then
-        if [[ "$separator" == "\0" ]]; then
-            cmd+=" | egrep -vz '(${directories})'"
-        else
-            cmd+=" | egrep -v '(${directories})'"
-        fi
-        #[[ "$print_screen" == "false" ]] && cmd+=" > /dev/null"
-    fi
-    
-    if [[ -n "$substrings" ]]; then
-        if [[ "$separator" == "\0" ]]; then
-            cmd+=" | egrep -vz '(${substrings})'"
-        else
-            cmd+=" | egrep -v '(${substrings})'"
-        fi
-        #[[ "$print_screen" == "false" ]] && cmd+=" > /dev/null"
-    fi
+    # Print command if verbose
+    [[ "$verbose" == "true" ]] && echo "Executing: $final_cmd" >&2
 
-
-
-    # Check if either output option is enabled
-    if [[ "$print_screen" != "false" && -z "$temp_result_file" ]]; then
-        echo "⚠️  Warning: No output destination specified. Please enable print_screen or provide temp_result_file." >&2
-        return 1
-    fi
-
-    # Only print executing message if verbose is true
-    [[ "$verbose" == "true" ]] && echo "executing: $cmd"
-    
-    [[ "$step" == "true" ]] && read -p "Press Enter to execute the command..."
-
-
-    if ! result=$(eval "$cmd" | tr '\0' '\n' 2>/dev/null); then
-        echo "❌ Error: Failed to execute command: $cmd" >&2
-        return 1
-    fi
-    
-    watch_result=$(echo "$result" | tr '\n' '¶')
-
-
-    # Execute the command dynamically and store result
-    if [[ -z "$result" ]]; then
+    # Execute the command and capture output
+    if ! result=$(eval "$final_cmd" 2>/dev/null); then
         echo "❌ Error: Command execution failed." >&2
         return 1
     fi
 
-
-    [[ "$step" == "true" ]] && read -p "Press Enter to handle output..."
-
-
-
-    # Format result with eza and color control
-    if [[ "$ansi" == "true" ]]; then
-        final_result=$(echo "$result" | tr '\n' '\0' | xargs -0 eza --icons --long --grid --color=always)
-    else
-        final_result=$(echo "$result" | tr '\n' '\0' | xargs -0 eza --icons --long --grid --color=never)
+    if [[ -z "$result" ]]; then
+        echo "❌ Error: No results found." >&2
+        return 1
     fi
 
-
-    watch_final_result=$(echo "$final_result" | tr '\n' '¶')
-
-
-    # Handle output based on settings
+    # Handle output
     if [[ "$print_screen" == "true" ]]; then
-        echo "$final_result"
+        echo "$result"
     fi
     
     if [[ -n "$temp_result_file" ]]; then
         echo "$result" > "$temp_result_file"
-        echo "$final_result" > "$temp_result_file_colored"
     fi
 }
