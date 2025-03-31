@@ -4,47 +4,47 @@
 # This script helps test and debug the find_files_with functionality
 
 # Source the main script
-source "$(dirname "${BASH_SOURCE[0]}")/find_files_with.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/find_files_without.sh"
 
 # Test cases with descriptive names
 test_basic_extension_filter() {
     echo "🧪 Testing basic extension filter (Python and JavaScript files)..."
-    find_files_with extensions="py|js" verbose=true
+    find_files_without extensions="py|js" verbose=true
 }
 
 test_image_files() {
     echo "🧪 Testing image files filter..."
-    find_files_with include_image_files=true verbose=true
+    find_files_without filter_out_image_files=true verbose=true
 }
 
 test_directory_filter() {
     echo "🧪 Testing directory filter (src and lib)..."
-    find_files_with directories="src|lib" verbose=true
+    find_files_without directories="src|lib" verbose=true
 }
 
 test_substring_filter() {
     echo "🧪 Testing substring filter (test and spec)..."
-    find_files_with substrings="test|spec" verbose=true
+    find_files_without substrings="test|spec" verbose=true
 }
 
 test_combined_filters() {
     echo "🧪 Testing combined filters (programming files in src with 'controller')..."
-    find_files_with include_programming_files=true directories="src" substrings="controller" verbose=true
+    find_files_without filter_out_programming_files=true directories="src" substrings="controller" verbose=true
 }
 
 test_size_filters() {
     echo "🧪 Testing size filters (files between 1K and 1M)..."
-    find_files_with min_size="1K" max_size="1M" verbose=true
+    find_files_without min_size="1K" max_size="1M" verbose=true
 }
 
 test_type_filters() {
     echo "🧪 Testing type filters (directories only)..."
-    find_files_with type="d" verbose=true long=true
+    find_files_without type="d" verbose=true long=true
 }
 
 test_format_options() {
     echo "🧪 Testing format options (long format with ANSI colors)..."
-    find_files_with include_programming_files=true long=true ansi=true verbose=true
+    find_files_without filter_out_programming_files=true long=true ansi=true verbose=true
 }
 
 # Debug function to run specific test

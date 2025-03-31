@@ -2,295 +2,179 @@
 
 ROOT_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
 
-
 # Source the function file
 source "${ROOT_DIR}/find_files_without.sh"
 
 # Print usage information
 usage() {
-    echo "Usage: ffwo.sh [options] <directory>"
-    echo "Find files that don't match certain criteria"
-    echo
-    echo "Options:"
-    echo "  -v, --verbose               Enable verbose output"
-    echo "  -p, --print-screen          Print results to screen"
-    echo "  -c, --ansi                  Enable ANSI color output"
-    echo "  -d, --depth DEPTH           Search depth (default: 2)"
-    echo "  -X, --extensions EXT        Additional file extensions to exclude"
-    echo "  -D, --directories DIR       Directories to exclude"
-    echo "  -S, --substrings STR        Substrings to exclude"
-    echo "  -s|--search-dir DIR         Directory to search (default: .)"
-    echo "  -t, --type TYPE             Filter by type: f (file), d (directory), l (symlink), x (executable)"
-    echo "      --max-size SIZE         Maximum file size to include"
-    echo "      --min-size SIZE         Minimum file size to include"
-    echo "      --temp-file FILE        Output file for results"
-    echo "      --force-create-temp     Force create temp directories"
-    echo "      --step                  Enable step-by-step execution"
-    echo "      --no-text-files         Filter out text files"
-    echo "      --no-package-files      Filter out package files"
-    echo "      --no-web-files          Filter out web files"
-    echo "      --no-media-files        Filter out media files"
-    echo "      --no-image-files        Filter out image files"
-    echo "      --no-video-files        Filter out video files"
-    echo "      --no-audio-files        Filter out audio files"
-    echo "      --no-archive-files      Filter out archive files"
-    echo "      --no-database-files     Filter out database files"
-    echo "      --no-config-files       Filter out config files"
-    echo "      --no-diagram-files      Filter out diagram files"
-    echo "      --no-markup-files       Filter out markup files"
-    echo "      --no-apple-config-files Filter out Apple config files"
-    echo "      --no-programming-files  Filter out programming files"
-    echo "      --no-windows-files      Filter out Windows files"
-    echo "      --where                 Show script location"
-    echo "      --separator SEP         Separator for results"
-    echo "      --long                  Use long listing format"
-    echo "  -h, --help                  Show this help message"
+    cat <<EOF
+Usage: ffwo.sh [options] <directory>
+Find files that don't match certain criteria
+
+Options:
+  -v, --verbose               Enable verbose output
+  -p, --print-screen          Print results to screen
+  -c, --ansi                  Enable ANSI color output
+  -d, --depth DEPTH           Search depth (default: 2)
+  -X, --extensions EXT        Additional file extensions to exclude
+  -D, --directories DIR       Directories to exclude
+  -S, --substrings STR       Substrings to exclude
+  -s, --search-dir DIR        Directory to search (default: .)
+  -t, --type TYPE             Filter by type: f (file), d (directory), l (symlink), x (executable)
+      --max-size SIZE         Maximum file size to include
+      --min-size SIZE         Minimum file size to include
+      --temp-file FILE        Output file for results
+      --force-create-temp     Force create temp directories
+      --step                  Enable step-by-step execution
+      --where                 Show script location
+      --separator SEP         Separator for results
+      --long                  Use long listing format
+  -h, --help                  Show this help message
+      --help-filters          Show detailed help about filters
+      --help-examples         Show usage examples
+
+Filters:
+      --no-text-files, --no-package-files, --no-web-files, --no-media-files,
+      --no-image-files, --no-video-files, --no-audio-files, --no-archive-files,
+      --no-database-files, --no-config-files, --no-diagram-files,
+      --no-markup-files, --no-apple-config-files, --no-programming-files,
+      --no-windows-files
+EOF
 }
 
-# Function to show error and usage for options requiring values
-show_option_error() {
-    local option=$1
-    echo "Error: $option requires a value"
-    echo "Usage: ffwo.sh $option VALUE"
-    echo "Use -h or --help to see available options"
-    exit 1
+# Print detailed filter help
+filter_help() {
+    cat <<EOF
+Filter Details:
+  --no-text-files            Exclude common text files (txt, md, etc)
+  --no-package-files         Exclude package management files (json, lock, etc)
+  --no-web-files            Exclude web development files (html, css, js)
+  --no-media-files          Exclude all media files (images, video, audio)
+  --no-image-files          Exclude image files (jpg, png, gif, etc)
+  --no-video-files          Exclude video files (mp4, avi, mov, etc)
+  --no-audio-files          Exclude audio files (mp3, wav, etc)
+  --no-archive-files        Exclude archive files (zip, tar, etc)
+  --no-database-files       Exclude database files (sql, db, etc)
+  --no-config-files         Exclude configuration files (yml, ini, etc)
+  --no-diagram-files        Exclude diagram files (drawio, etc)
+  --no-markup-files         Exclude markup files (xml, etc)
+  --no-apple-config-files   Exclude Apple config files (plist, etc)
+  --no-programming-files    Exclude programming files (py, js, etc)
+  --no-windows-files        Exclude Windows-specific files (exe, dll)
+EOF
 }
 
-# Initialize variables with defaults
-VERBOSE="false"
-PRINT_SCREEN="true"
-ANSI="true"
-DEPTH="2"
-EXTENSIONS=""
-DIRECTORIES=""
-SUBSTRINGS=""
-SEARCH_DIR="."
-MAX_SIZE=""
-MIN_SIZE=""
-FILTER_OUT_TEXT_FILES="false"
-FILTER_OUT_PACKAGE_FILES="false"
-FILTER_OUT_WEB_FILES="false"
-FILTER_OUT_MEDIA_FILES="false"
-FILTER_OUT_IMAGE_FILES="false"
-FILTER_OUT_VIDEO_FILES="false"
-FILTER_OUT_AUDIO_FILES="false"
-FILTER_OUT_ARCHIVE_FILES="false"
-FILTER_OUT_DATABASE_FILES="false"
-FILTER_OUT_CONFIG_FILES="false"
-FILTER_OUT_DIAGRAM_FILES="false"
-FILTER_OUT_MARKUP_FILES="false"
-FILTER_OUT_APPLE_CONFIG_FILES="false"
-FILTER_OUT_PROGRAMMING_FILES="false"
-FILTER_OUT_WINDOWS_FILES="false"
-FORCE_CREATE_TMP="false"
-STEP="false"
-SEPARATOR="\0"  # Default to newline
-LONG="false"
-TYPE=""
+# Print usage examples
+examples_help() {
+    cat <<EOF
+Examples:
+  # Find all non-text files in current directory up to depth 2
+  ffwo.sh --no-text-files
 
-# Parse command line options
-while [[ "$#" -gt 0 ]]; do
-    case "$1" in
-        -v|--verbose)
-            VERBOSE="true"
-            shift
-            ;;
-        -p|--print-screen)
-            PRINT_SCREEN="true"
-            shift
-            ;;
-        -c|--ansi)
-            ANSI="true"
-            shift
-            ;;
-        -d|--depth)
-            if [[ -z "$2" || "$2" =~ ^- ]]; then
-                show_option_error "--depth"
-            fi
-            DEPTH="$2"
-            shift 2
-            ;;
-        -X|--extensions)
-            if [[ -z "$2" || "$2" =~ ^- ]]; then
-                show_option_error "--extensions"
-            fi
-            EXTENSIONS="$2"
-            shift 2
-            ;;
-        -D|--directories)
-            if [[ -z "$2" || "$2" =~ ^- ]]; then
-                show_option_error "--directories"
-            fi
-            DIRECTORIES="$2"
-            shift 2
-            ;;
-        -S|--substrings)
-            if [[ -z "$2" || "$2" =~ ^- ]]; then
-                show_option_error "--substrings"
-            fi
-            SUBSTRINGS="$2"
-            shift 2
-            ;;
-        -s|--search-dir)
-            if [[ -z "$2" || "$2" =~ ^- ]]; then
-                show_option_error "--search-dir"
-            fi
-            SEARCH_DIR="$2"
-            shift 2
-            ;;
-        -t|--type)
-            if [[ -z "$2" || "$2" =~ ^- ]]; then
-                show_option_error "--type"
-            fi
-            TYPE="$2"
-            shift 2
-            ;;
-        --max-size)
-            if [[ -z "$2" || "$2" =~ ^- ]]; then
-                show_option_error "--max-size"
-            fi
-            MAX_SIZE="$2"
-            shift 2
-            ;;
-        --min-size)
-            if [[ -z "$2" || "$2" =~ ^- ]]; then
-                show_option_error "--min-size"
-            fi
-            MIN_SIZE="$2"
-            shift 2
-            ;;
-        --temp-file)
-            if [[ -z "$2" || "$2" =~ ^- ]]; then
-                show_option_error "--temp-file"
-            fi
-            TEMP_FILE="$2"
-            shift 2
-            ;;
-        --force-create-temp)
-            FORCE_CREATE_TMP="true"
-            shift
-            ;;
-        --step)
-            STEP="true"
-            shift
-            ;;
-        --where)
-            echo "Script location: $(dirname "$(readlink -f "$0")")"
-            exit 0
-            ;;
-        --no-text-files)
-            FILTER_OUT_TEXT_FILES="true"
-            shift
-            ;;
-        --no-package-files)
-            FILTER_OUT_PACKAGE_FILES="true"
-            shift
-            ;;
-        --no-web-files)
-            FILTER_OUT_WEB_FILES="true"
-            shift
-            ;;
-        --no-media-files)
-            FILTER_OUT_MEDIA_FILES="true"
-            shift
-            ;;
-        --no-image-files)
-            FILTER_OUT_IMAGE_FILES="true"
-            shift
-            ;;
-        --no-video-files)
-            FILTER_OUT_VIDEO_FILES="true"
-            shift
-            ;;
-        --no-audio-files)
-            FILTER_OUT_AUDIO_FILES="true"
-            shift
-            ;;
-        --no-archive-files)
-            FILTER_OUT_ARCHIVE_FILES="true"
-            shift
-            ;;
-        --no-database-files)
-            FILTER_OUT_DATABASE_FILES="true"
-            shift
-            ;;
-        --no-config-files)
-            FILTER_OUT_CONFIG_FILES="true"
-            shift
-            ;;
-        --no-diagram-files)
-            FILTER_OUT_DIAGRAM_FILES="true"
-            shift
-            ;;
-        --no-markup-files)
-            FILTER_OUT_MARKUP_FILES="true"
-            shift
-            ;;
-        --no-apple-config-files)
-            FILTER_OUT_APPLE_CONFIG_FILES="true"
-            shift
-            ;;
-        --no-programming-files)
-            FILTER_OUT_PROGRAMMING_FILES="true"
-            shift
-            ;;
-        --no-windows-files)
-            FILTER_OUT_WINDOWS_FILES="true"
-            shift
-            ;;
-        --separator)
-            if [[ -z "$2" || "$2" =~ ^- ]]; then
-                show_option_error "--separator"
-            fi
-            SEPARATOR="$2"
-            shift 2
-            ;;
-        --long)
-            LONG="true"
-            shift
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            echo "Use -h or --help to see available options"
-            exit 1
-            ;;
-    esac
-done
+  # Find large media files (>100MB) recursively
+  ffwo.sh --no-media-files --min-size 100M -d 999
+
+  # List all files except source code in a project
+  ffwo.sh --no-programming-files --search-dir ./my-project
+
+  # Find configuration files, print in long format
+  ffwo.sh --no-config-files --long
+
+  # Search only for directories, excluding version control
+  ffwo.sh -t d --no-programming-files
+EOF
+}
+
+# Function to run find_files_without with parsed options
+run_find_files_without() {
+    declare -A OPTIONS=(
+        ["verbose"]="false"
+        ["print_screen"]="true"
+        ["ansi"]="true"
+        ["depth"]="2"
+        ["search_dir"]="."
+        ["max_size"]=""
+        ["min_size"]=""
+        ["force_create_tmp"]="false"
+        ["step"]="false"
+        ["separator"]="\0"
+        ["long"]="false"
+        ["type"]=""
+        ["extensions"]=""
+        ["directories"]=""
+        ["substrings"]=""
+        ["filter_out_text_files"]="false"
+        ["filter_out_package_files"]="false"
+        ["filter_out_web_files"]="false"
+        ["filter_out_media_files"]="false"
+        ["filter_out_image_files"]="false"
+        ["filter_out_video_files"]="false"
+        ["filter_out_audio_files"]="false"
+        ["filter_out_archive_files"]="false"
+        ["filter_out_database_files"]="false"
+        ["filter_out_config_files"]="false"
+        ["filter_out_diagram_files"]="false"
+        ["filter_out_markup_files"]="false"
+        ["filter_out_apple_config_files"]="false"
+        ["filter_out_programming_files"]="false"
+        ["filter_out_windows_files"]="false"
+        ["temp_file"]=""
+    )
+
+    # Parse command-line arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -v|--verbose) OPTIONS["verbose"]="true" ;;
+            -p|--print-screen) OPTIONS["print_screen"]="true" ;;
+            -c|--ansi) OPTIONS["ansi"]="true" ;;
+            -d|--depth) OPTIONS["depth"]="$2"; shift ;;
+            -X|--extensions) OPTIONS["extensions"]="$2"; shift ;;
+            -D|--directories) OPTIONS["directories"]="$2"; shift ;;
+            -S|--substrings) OPTIONS["substrings"]="$2"; shift ;;
+            -s|--search-dir) OPTIONS["search_dir"]="$2"; shift ;;
+            -t|--type) OPTIONS["type"]="$2"; shift ;;
+            --max-size) OPTIONS["max_size"]="$2"; shift ;;
+            --min-size) OPTIONS["min_size"]="$2"; shift ;;
+            --temp-file) OPTIONS["temp_file"]="$2"; shift ;;
+            --separator) 
+                if [[ "$2" != "\0" && "$2" != "\n" ]]; then
+                    echo "❌ Error: separator must be either \\0 or \\n" >&2
+                    return 1
+                fi
+                OPTIONS["separator"]="$2"; shift ;;
+            --force-create-temp) OPTIONS["force_create_tmp"]="true" ;;
+            --step) OPTIONS["step"]="true" ;;
+            --long) OPTIONS["long"]="true" ;;
+            --where) echo "Script location: $(dirname "$(readlink -f "$0")")"; return 0 ;;
+            --no-text-files) OPTIONS["filter_out_text_files"]="true" ;;
+            --no-package-files) OPTIONS["filter_out_package_files"]="true" ;;
+            --no-web-files) OPTIONS["filter_out_web_files"]="true" ;;
+            --no-media-files) OPTIONS["filter_out_media_files"]="true" ;;
+            --no-image-files) OPTIONS["filter_out_image_files"]="true" ;;
+            --no-video-files) OPTIONS["filter_out_video_files"]="true" ;;
+            --no-audio-files) OPTIONS["filter_out_audio_files"]="true" ;;
+            --no-archive-files) OPTIONS["filter_out_archive_files"]="true" ;;
+            --no-database-files) OPTIONS["filter_out_database_files"]="true" ;;
+            --no-config-files) OPTIONS["filter_out_config_files"]="true" ;;
+            --no-diagram-files) OPTIONS["filter_out_diagram_files"]="true" ;;
+            --no-markup-files) OPTIONS["filter_out_markup_files"]="true" ;;
+            --no-apple-config-files) OPTIONS["filter_out_apple_config_files"]="true" ;;
+            --no-programming-files) OPTIONS["filter_out_programming_files"]="true" ;;
+            --no-windows-files) OPTIONS["filter_out_windows_files"]="true" ;;
+            -h|--help) usage; return 0 ;;
+            --help-filters) filter_help; return 0 ;;
+            --help-examples) examples_help; return 0 ;;
+            *) echo "❌ Error: Unknown argument: $1" >&2; return 1 ;;
+        esac
+        shift
+    done
+
+    # Call `find_files_without` dynamically
+    find_files_without $(for key in "${!OPTIONS[@]}"; do echo -n "$key=${OPTIONS[$key]} "; done)
+}
 
 
-# Call the main function with all parameters
-find_files_without \
-    "search_dir=$SEARCH_DIR" \
-    "depth=$DEPTH" \
-    "extensions=$EXTENSIONS" \
-    "directories=$DIRECTORIES" \
-    "substrings=$SUBSTRINGS" \
-    "filter_out_text_files=$FILTER_OUT_TEXT_FILES" \
-    "filter_out_package_files=$FILTER_OUT_PACKAGE_FILES" \
-    "filter_out_web_files=$FILTER_OUT_WEB_FILES" \
-    "filter_out_media_files=$FILTER_OUT_MEDIA_FILES" \
-    "filter_out_image_files=$FILTER_OUT_IMAGE_FILES" \
-    "filter_out_video_files=$FILTER_OUT_VIDEO_FILES" \
-    "filter_out_audio_files=$FILTER_OUT_AUDIO_FILES" \
-    "filter_out_archive_files=$FILTER_OUT_ARCHIVE_FILES" \
-    "filter_out_database_files=$FILTER_OUT_DATABASE_FILES" \
-    "filter_out_config_files=$FILTER_OUT_CONFIG_FILES" \
-    "filter_out_diagram_files=$FILTER_OUT_DIAGRAM_FILES" \
-    "filter_out_markup_files=$FILTER_OUT_MARKUP_FILES" \
-    "filter_out_apple_config_files=$FILTER_OUT_APPLE_CONFIG_FILES" \
-    "filter_out_programming_files=$FILTER_OUT_PROGRAMMING_FILES" \
-    "filter_out_windows_files=$FILTER_OUT_WINDOWS_FILES" \
-    "ansi=$ANSI" \
-    "print_screen=$PRINT_SCREEN" \
-    "verbose=$VERBOSE" \
-    "force_create_tmp=$FORCE_CREATE_TMP" \
-    "step=$STEP" \
-    "max_size=$MAX_SIZE" \
-    "min_size=$MIN_SIZE" \
-    "separator=$SEPARATOR" \
-    "long=$LONG" \
-    "type=$TYPE"
+# If script is executed directly, run the function
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    run_find_files_without "$@"
+fi

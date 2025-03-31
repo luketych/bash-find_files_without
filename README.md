@@ -121,7 +121,7 @@ ln -s "$(pwd)/find_files_with.sh" /usr/local/bin/find_files_with
 The script uses a pipeline-based approach:
 
 1. Uses `fd` to efficiently find files based on basic criteria (depth, type, size)
-2. Applies positive filters using `egrep` to match extensions, directories, and substrings
+2. Applies positive filters using `grep -E` to match extensions, directories, and substrings
 3. Formats output using `eza` for a modern, colorized display
 
 ## Contributing

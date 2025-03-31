@@ -1,12 +1,15 @@
 #!/opt/homebrew/bin/bash
 
-# Set bash to exit on pipe failures
+# Set bash to exit on \pipe failures
 set -o pipefail
-CONFIG_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
 
-source "${CONFIG_DIR}/config/filters.sh"
-source "${CONFIG_DIR}/pipeline/a.sh"
-source "${CONFIG_DIR}/pipeline/b.sh"
+# Source extension definitions
+source "$(dirname "${BASH_SOURCE[0]}")/config/filters.sh"
+
+# Source pipeline stages
+source "$(dirname "${BASH_SOURCE[0]}")/pipeline/a.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/pipeline/b.sh"
+
 
 # find_files_without - Search for files while excluding specific extensions, directories, and substrings
 #
@@ -54,26 +57,26 @@ find_files_without() {
         case "$arg" in
             search_dir=*) search_dir="${arg#*=}" ;;
             depth=*) depth="${arg#*=}" ;;
-	          extensions=*) extensions="${arg#*=}" ;;
+            extensions=*) extensions="${arg#*=}" ;;
             directories=*) directories="${arg#*=}" ;;
             substrings=*) substrings="${arg#*=}" ;;
-            min_size=*) min_size="${arg#*=}" ;;  # New case for minimum size
-            max_size=*) max_size="${arg#*=}" ;;  # New case for maximum size
+            min_size=*) min_size="${arg#*=}" ;;
+            max_size=*) max_size="${arg#*=}" ;;
             filter_out_text_files=*) filter_out_text_files="${arg#*=}" ;;
             filter_out_package_files=*) filter_out_package_files="${arg#*=}" ;;
             filter_out_web_files=*) filter_out_web_files="${arg#*=}" ;;
-            filter_out_media_files=*) filter_out_media_files="${arg#*=}" ;;  # New case for media files
-            filter_out_image_files=*) filter_out_image_files="${arg#*=}" ;;  # New case for image files
-            filter_out_video_files=*) filter_out_video_files="${arg#*=}" ;;  # New case for video files
-            filter_out_audio_files=*) filter_out_audio_files="${arg#*=}" ;;  # New case for audio files
+            filter_out_media_files=*) filter_out_media_files="${arg#*=}" ;;
+            filter_out_image_files=*) filter_out_image_files="${arg#*=}" ;;
+            filter_out_video_files=*) filter_out_video_files="${arg#*=}" ;;
+            filter_out_audio_files=*) filter_out_audio_files="${arg#*=}" ;;
             filter_out_archive_files=*) filter_out_archive_files="${arg#*=}" ;;
             filter_out_database_files=*) filter_out_database_files="${arg#*=}" ;;
-            filter_out_config_files=*) filter_out_config_files="${arg#*=}" ;;  # New case for config files
-            filter_out_diagram_files=*) filter_out_diagram_files="${arg#*=}" ;;  # New case for diagram files
-            filter_out_markup_files=*) filter_out_markup_files="${arg#*=}" ;;  # New case for markup files
-            filter_out_apple_config_files=*) filter_out_apple_config_files="${arg#*=}" ;;  # New case for Apple config files
-            filter_out_programming_files=*) filter_out_programming_files="${arg#*=}" ;;  # New case for programming files
-            filter_out_windows_files=*) filter_out_windows_files="${arg#*=}" ;;  # New case for Windows files
+            filter_out_config_files=*) filter_out_config_files="${arg#*=}" ;;
+            filter_out_diagram_files=*) filter_out_diagram_files="${arg#*=}" ;;
+            filter_out_markup_files=*) filter_out_markup_files="${arg#*=}" ;;
+            filter_out_apple_config_files=*) filter_out_apple_config_files="${arg#*=}" ;;
+            filter_out_programming_files=*) filter_out_programming_files="${arg#*=}" ;;
+            filter_out_windows_files=*) filter_out_windows_files="${arg#*=}" ;;
             ansi=*) ansi="${arg#*=}" ;;
             print_screen=*) print_screen="${arg#*=}" ;;
             verbose=*) verbose="${arg#*=}" ;;
@@ -92,14 +95,6 @@ find_files_without() {
             *) echo "❌ Error: Unknown argument: $arg" >&2 && return 1 ;;
         esac
     done
-
-    # if max_size is less than min_size, return an error
-    if [[ -n "$min_size" && -n "$max_size" ]]; then
-        if [[ "$min_size" -gt "$max_size" ]]; then
-            echo "❌ Error: Minimum size is greater than maximum size." >&2
-            return 1
-        fi
-    fi
 
 
     # Check if temp file directory exists
@@ -126,6 +121,7 @@ find_files_without() {
     if [[ -n "$extensions" ]]; then
         extensions=$(echo "$extensions" | sed 's/\.//g')
     fi
+    
     [[ "$step" == "true" ]] && read -p "Press Enter to continue with adding extensions based on flags..."
 
     # Add extensions based on enabled flags
@@ -216,10 +212,27 @@ find_files_without() {
 
     # Print command if verbose
     [[ "$verbose" == "true" ]] && echo "Executing: $final_cmd" >&2
+    
+    # Convert string command into an array to safely execute it
+    # LEARN this doesn't work because This treats the entire pipeline as a single command, splitting on spaces — but pipes (|) are not operators when passed this way. So Bash tries to execute fd, with literal arguments including the pipe character (|), which makes no sense and fails.
+    # read -r -a cmd_array <<< "$final_cmd"
+    # result=$("${cmd_array[@]}" 2>&1)
+    
 
-    # Execute the command and capture output
-    if ! result=$(eval "$final_cmd" 2>/dev/null); then
-        echo "❌ Error: Command execution failed." >&2
+    result=$(bash -c "$final_cmd" 2>&1)
+    exit_code=$?
+
+# fd -d 2 --no-hidden -t f --print0 | grep -Evz '\.(py|js)(~)?$' | tr '\0' '\n' | tr '\n' '\0' | xargs -0 eza --icons --grid --color=always
+
+    #exit_code=$?  # Capture exit status
+
+    # Print the captured output for debugging
+
+    echo "Command Output: $result"
+
+    # Check if command failed
+    if [[ $exit_code -ne 0 ]]; then
+        echo "❌ Error: Command execution failed with exit code $exit_code" >&2
         return 1
     fi
 

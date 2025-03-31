@@ -18,9 +18,9 @@ get_find_command() {
     fi
 
     if [[ "$separator" == "\0" ]]; then
-        cmd+=" --print0 . $search_dir"
+        cmd+=" --print0 $search_dir"
     else
-        cmd+=" . $search_dir"
+        cmd+=" $search_dir"
     fi
     
     # Add size filters if specified
