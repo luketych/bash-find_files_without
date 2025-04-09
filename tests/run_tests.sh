@@ -14,11 +14,20 @@ fi
 
 # Parse command line arguments
 SKIP_TESTS=()
+VERBOSE=true
 while [[ $# -gt 0 ]]; do
     case $1 in
         --skip)
             SKIP_TESTS+=("$2")
             shift 2
+            ;;
+        --verbose)
+            VERBOSE=true
+            shift
+            ;;
+        --silent)
+            VERBOSE=false
+            shift
             ;;
         *)
             echo "Unknown option: $1"
@@ -44,9 +53,10 @@ fi
 # Run all test suites
 run_all_tests() {
     setup_test_environment
-    
-    echo "Running all test suites..."
-    echo "=========================="
+    if [[ "$VERBOSE" == "true" ]] && [[ "$1" != "--silent" ]]; then
+        echo "Running all test suites..."
+        echo "=========================="
+    fi
     
     # Basic operations
     if [[ ! " ${SKIP_TESTS[@]} " =~ " basic_operations " ]]; then
@@ -85,11 +95,13 @@ run_all_tests() {
     
     cleanup_test_environment
     
-    echo "=========================="
-    echo "Test Results:"
-    echo "Tests Passed: $TESTS_PASSED"
-    echo "Tests Failed: $TESTS_FAILED"
-    echo "Total Tests: $((TESTS_PASSED + TESTS_FAILED))"
+    if [[ "$VERBOSE" == "true" ]] && [[ "$1" != "--silent" ]]; then
+        echo "=========================="
+        echo "Test Results:"
+        echo "Tests Passed: $TESTS_PASSED"
+        echo "Tests Failed: $TESTS_FAILED"
+        echo "Total Tests: $((TESTS_PASSED + TESTS_FAILED))"
+    fi
     
     # Exit with failure if any tests failed
     [ $TESTS_FAILED -eq 0 ]

@@ -1,0 +1,205 @@
+spawn bash -c fd --hidden --no-ignore . .  | egrep -v '\.(py|js)(~)?$' | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1mconfig[0m             FEATURES.md            [32m [1mnvim-call.sh[0m    [33m󰂺 [1;4mREADME.md[0m
+ .gitignore  [34m [1mcoverage[0m          [32m [1mfind_files_without.sh[0m  [34m [1mother_test_dir[0m   STATE.md
+[34m [1m.qodo[0m       [32m [1mdebug.sh[0m          [32m [1mindex[0m                  [32m [1mout.txt[0m         [34m [1mtests[0m
+[34m [1m.vscode[0m     [33m [1mextract_todos.py[0m   index.sh               [34m [1mpipeline[0m        [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | egrep -v '\.(py|js)(~)?$' | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1mconfig[0m             FEATURES.md            [32m [1mnvim-call.sh[0m    [33m󰂺 [1;4mREADME.md[0m
+ .gitignore  [34m [1mcoverage[0m          [32m [1mfind_files_without.sh[0m  [34m [1mother_test_dir[0m   STATE.md
+[34m [1m.qodo[0m       [32m [1mdebug.sh[0m          [32m [1mindex[0m                  [32m [1mout.txt[0m         [34m [1mtests[0m
+[34m [1m.vscode[0m     [33m [1mextract_todos.py[0m   index.sh               [34m [1mpipeline[0m        [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | egrep -v '\.(py|js)(~)?$' | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1m.qodo[0m    [34m [1mconfig[0m    [32m [1mdebug.sh[0m           FEATURES.md            [32m [1mindex[0m     [32m [1mnvim-call.sh[0m    [32m [1mout.txt[0m   [33m󰂺 [1;4mREADME.md[0m  [34m [1mtests[0m
+ .gitignore  [34m [1m.vscode[0m  [34m [1mcoverage[0m  [33m [1mextract_todos.py[0m  [32m [1mfind_files_without.sh[0m   index.sh  [34m [1mother_test_dir[0m  [34m [1mpipeline[0m   STATE.md   [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1m.qodo[0m    [34m [1mconfig[0m    [32m [1mdebug.sh[0m           FEATURES.md            [32m [1mindex[0m     [32m [1mnvim-call.sh[0m    [32m [1mout.txt[0m   [33m󰂺 [1;4mREADME.md[0m  [34m [1mtests[0m
+ .gitignore  [34m [1m.vscode[0m  [34m [1mcoverage[0m  [33m [1mextract_todos.py[0m  [32m [1mfind_files_without.sh[0m   index.sh  [34m [1mother_test_dir[0m  [34m [1mpipeline[0m   STATE.md   [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1m.qodo[0m    [34m [1mconfig[0m    [32m [1mdebug.sh[0m           FEATURES.md            [32m [1mindex[0m     [32m [1mnvim-call.sh[0m    [32m [1mout.txt[0m   [33m󰂺 [1;4mREADME.md[0m  [34m [1mtests[0m
+ .gitignore  [34m [1m.vscode[0m  [34m [1mcoverage[0m  [33m [1mextract_todos.py[0m  [32m [1mfind_files_without.sh[0m   index.sh  [34m [1mother_test_dir[0m  [34m [1mpipeline[0m   STATE.md   [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1m.qodo[0m    [34m [1mconfig[0m    [32m [1mdebug.sh[0m           FEATURES.md            [32m [1mindex[0m     [32m [1mnvim-call.sh[0m    [32m [1mout.txt[0m   [33m󰂺 [1;4mREADME.md[0m  [34m [1mtests[0m
+ .gitignore  [34m [1m.vscode[0m  [34m [1mcoverage[0m  [33m [1mextract_todos.py[0m  [32m [1mfind_files_without.sh[0m   index.sh  [34m [1mother_test_dir[0m  [34m [1mpipeline[0m   STATE.md   [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1m.qodo[0m    [34m [1mconfig[0m    [32m [1mdebug.sh[0m           FEATURES.md            [32m [1mindex[0m     [32m [1mnvim-call.sh[0m    [32m [1mout.txt[0m   [33m󰂺 [1;4mREADME.md[0m  [34m [1mtests[0m
+ .gitignore  [34m [1m.vscode[0m  [34m [1mcoverage[0m  [33m [1mextract_todos.py[0m  [32m [1mfind_files_without.sh[0m   index.sh  [34m [1mother_test_dir[0m  [34m [1mpipeline[0m   STATE.md   [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1m.qodo[0m    [34m [1mconfig[0m    [32m [1mdebug.sh[0m           FEATURES.md            [32m [1mindex[0m     [32m [1mnvim-call.sh[0m    [32m [1mout.txt[0m   [33m󰂺 [1;4mREADME.md[0m  [34m [1mtests[0m
+ .gitignore  [34m [1m.vscode[0m  [34m [1mcoverage[0m  [33m [1mextract_todos.py[0m  [32m [1mfind_files_without.sh[0m   index.sh  [34m [1mother_test_dir[0m  [34m [1mpipeline[0m   STATE.md   [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1m.qodo[0m    [34m [1mconfig[0m    [32m [1mdebug.sh[0m           FEATURES.md            [32m [1mindex[0m     [32m [1mnvim-call.sh[0m    [32m [1mout.txt[0m   [33m󰂺 [1;4mREADME.md[0m  [34m [1mtests[0m
+ .gitignore  [34m [1m.vscode[0m  [34m [1mcoverage[0m  [33m [1mextract_todos.py[0m  [32m [1mfind_files_without.sh[0m   index.sh  [34m [1mother_test_dir[0m  [34m [1mpipeline[0m   STATE.md   [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1m.qodo[0m    [34m [1mconfig[0m    [32m [1mdebug.sh[0m           FEATURES.md            [32m [1mindex[0m     [32m [1mnvim-call.sh[0m    [32m [1mout.txt[0m   [33m󰂺 [1;4mREADME.md[0m  [34m [1mtests[0m
+ .gitignore  [34m [1m.vscode[0m  [34m [1mcoverage[0m  [33m [1mextract_todos.py[0m  [32m [1mfind_files_without.sh[0m   index.sh  [34m [1mother_test_dir[0m  [34m [1mpipeline[0m   STATE.md   [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore --max-depth 2 . .  | eza --all --grid --icons --color=always
+[34m [1m.git[0m        [34m [1m.qodo[0m    [34m [1mconfig[0m    [32m [1mdebug.sh[0m           FEATURES.md            [32m [1mindex[0m     [32m [1mnvim-call.sh[0m    [32m [1mout.txt[0m   [33m󰂺 [1;4mREADME.md[0m  [34m [1mtests[0m
+ .gitignore  [34m [1m.vscode[0m  [34m [1mcoverage[0m  [33m [1mextract_todos.py[0m  [32m [1mfind_files_without.sh[0m   index.sh  [34m [1mother_test_dir[0m  [34m [1mpipeline[0m   STATE.md   [34m [1mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | egrep -v '\.(py|js)(~)?$' | eza --all --grid --icons --color=always
+[1;34m.git[0m
+.gitignore
+[1;34m.qodo[0m
+[1;34m.vscode[0m
+[1;34mconfig[0m
+[1;34mcoverage[0m
+[1;32mdebug.sh[0m
+[1;33mextract_todos.py[0m
+FEATURES.md
+[1;32mfind_files_without.sh[0m
+[1;32mindex[0m
+index.sh
+[1;32mnvim-call.sh[0m
+[1;34mother_test_dir[0m
+[1;32mout.txt[0m
+[1;34mpipeline[0m
+[1;4;33mREADME.md[0m
+STATE.md
+[1;34mtests[0m
+[1;34mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[1;34m.git[0m
+.gitignore
+[1;34m.qodo[0m
+[1;34m.vscode[0m
+[1;34mconfig[0m
+[1;34mcoverage[0m
+[1;32mdebug.sh[0m
+[1;33mextract_todos.py[0m
+FEATURES.md
+[1;32mfind_files_without.sh[0m
+[1;32mindex[0m
+index.sh
+[1;32mnvim-call.sh[0m
+[1;34mother_test_dir[0m
+[1;32mout.txt[0m
+[1;34mpipeline[0m
+[1;4;33mREADME.md[0m
+STATE.md
+[1;34mtests[0m
+[1;34mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[1;34m.git[0m
+.gitignore
+[1;34m.qodo[0m
+[1;34m.vscode[0m
+[1;34mconfig[0m
+[1;34mcoverage[0m
+[1;32mdebug.sh[0m
+[1;33mextract_todos.py[0m
+FEATURES.md
+[1;32mfind_files_without.sh[0m
+[1;32mindex[0m
+index.sh
+[1;32mnvim-call.sh[0m
+[1;34mother_test_dir[0m
+[1;32mout.txt[0m
+[1;34mpipeline[0m
+[1;4;33mREADME.md[0m
+STATE.md
+[1;34mtests[0m
+[1;34mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[1;34m.git[0m
+.gitignore
+[1;34m.qodo[0m
+[1;34m.vscode[0m
+[1;34mconfig[0m
+[1;34mcoverage[0m
+[1;32mdebug.sh[0m
+[1;33mextract_todos.py[0m
+FEATURES.md
+[1;32mfind_files_without.sh[0m
+[1;32mindex[0m
+index.sh
+[1;32mnvim-call.sh[0m
+[1;34mother_test_dir[0m
+[1;32mout.txt[0m
+[1;34mpipeline[0m
+[1;4;33mREADME.md[0m
+STATE.md
+[1;34mtests[0m
+[1;34mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[1;34m.git[0m
+.gitignore
+[1;34m.qodo[0m
+[1;34m.vscode[0m
+[1;34mconfig[0m
+[1;34mcoverage[0m
+[1;32mdebug.sh[0m
+[1;33mextract_todos.py[0m
+FEATURES.md
+[1;32mfind_files_without.sh[0m
+[1;32mindex[0m
+index.sh
+[1;32mnvim-call.sh[0m
+[1;34mother_test_dir[0m
+[1;32mout.txt[0m
+[1;34mpipeline[0m
+[1;4;33mREADME.md[0m
+STATE.md
+[1;34mtests[0m
+[1;34mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[1;34m.git[0m
+.gitignore
+[1;34m.qodo[0m
+[1;34m.vscode[0m
+[1;34mconfig[0m
+[1;34mcoverage[0m
+[1;32mdebug.sh[0m
+[1;33mextract_todos.py[0m
+FEATURES.md
+[1;32mfind_files_without.sh[0m
+[1;32mindex[0m
+index.sh
+[1;32mnvim-call.sh[0m
+[1;34mother_test_dir[0m
+[1;32mout.txt[0m
+[1;34mpipeline[0m
+[1;4;33mREADME.md[0m
+STATE.md
+[1;34mtests[0m
+[1;34mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[1;34m.git[0m
+.gitignore
+[1;34m.qodo[0m
+[1;34m.vscode[0m
+[1;34mconfig[0m
+[1;34mcoverage[0m
+[1;32mdebug.sh[0m
+[1;33mextract_todos.py[0m
+FEATURES.md
+[1;32mfind_files_without.sh[0m
+[1;32mindex[0m
+index.sh
+[1;32mnvim-call.sh[0m
+[1;34mother_test_dir[0m
+[1;32mout.txt[0m
+[1;34mpipeline[0m
+[1;4;33mREADME.md[0m
+STATE.md
+[1;34mtests[0m
+[1;34mtmp[0m
+spawn bash -c fd --hidden --no-ignore . .  | eza --all --grid --icons --color=always
+[1;34m.git[0m
+.gitignore
+[1;34m.qodo[0m
+[1;34m.vscode[0m
+[1;34mconfig[0m
+[1;34mcoverage[0m
+[1;32mdebug.sh[0m
+[1;33mextract_todos.py[0m
+FEATURES.md
+[1;32mfind_files_without.sh[0m
+[1;32mindex[0m
+index.sh
+[1;32mnvim-call.sh[0m
+[1;34mother_test_dir[0m
+[1;32mout.txt[0m
+[1;34mpipeline[0m
+[1;4;33mREADME.md[0m
+STATE.md
+[1;34mtests[0m
+[1;34mtmp[0m

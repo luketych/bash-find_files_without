@@ -1,14 +1,185 @@
 #!/opt/homebrew/bin/bash
 
-# Set bash to exit on \pipe failures
+# Set bash to exit on pipe failures
 set -o pipefail
 
-# Source extension definitions
-source "$(dirname "${BASH_SOURCE[0]}")/config/filters.sh"
+# Source required files
+source "$(dirname "${BASH_SOURCE[0]}")/config/extensions.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/pipeline/a-get_find_command.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/pipeline/b-get_filter_command.sh"
 
-# Source pipeline stages
-source "$(dirname "${BASH_SOURCE[0]}")/pipeline/a.sh"
-source "$(dirname "${BASH_SOURCE[0]}")/pipeline/b.sh"
+# Function to convert size to bytes
+convert_to_bytes() {
+    local size=$1
+    local value=${size%[kKmMgG]}
+    local unit=${size#$value}
+    
+    case "${unit,,}" in
+        k) echo $((value * 1024)) ;;
+        m) echo $((value * 1024 * 1024)) ;;
+        g) echo $((value * 1024 * 1024 * 1024)) ;;
+        *) echo "$value" ;;
+    esac
+}
+
+# Validation functions
+validate_directory_pattern() {
+    local dir="$1"
+    # Check for invalid characters and patterns
+    if [[ "$dir" =~ [*?[\]{}] ]]; then
+        echo "❌ Error: Directory pattern '$dir' contains invalid wildcards or special characters." >&2
+        return 1
+    fi
+    return 0
+}
+
+validate_size_format() {
+    local size="$1"
+    # Check for valid size format (number followed by optional unit)
+    if ! [[ "$size" =~ ^[0-9]+[kKmMgGtT]?[bB]?$ ]]; then
+        echo "❌ Error: Invalid size format '$size'. Expected format: number[unit] (e.g., 100, 50K, 20M, 1G)" >&2
+        return 1
+    fi
+    # Convert to bytes for comparison
+    local bytes=$(convert_to_bytes "$size")
+    if [[ $bytes -lt 0 ]]; then
+        echo "❌ Error: Size cannot be negative." >&2
+        return 1
+    fi
+    return 0
+}
+
+validate_extension_format() {
+    local ext="$1"
+    # Check for valid extension format
+    if ! [[ "$ext" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+        echo "❌ Error: Invalid extension format '$ext'. Extensions should only contain alphanumeric characters, dots, underscores, or hyphens." >&2
+        return 1
+    fi
+    return 0
+}
+
+validate_substring_pattern() {
+    local pattern="$1"
+    # Check for empty pattern
+    if [[ -z "$pattern" ]]; then
+        echo "❌ Error: Substring pattern cannot be empty." >&2
+        return 1
+    fi
+    # Check for invalid characters that might break the find command
+  
+    return 0
+}
+
+
+
+# Default values (outside the function)
+DEFAULT_search_dir="."
+DEFAULT_type=""
+DEFAULT_depth=""
+DEFAULT_min_size=""
+DEFAULT_max_size=""
+DEFAULT_extensions=""
+DEFAULT_directories=""
+DEFAULT_substrings=""
+DEFAULT_output_format="NEWLINE"
+DEFAULT_temp_file=""
+DEFAULT_filter_out_text_files="false"
+DEFAULT_filter_out_package_files="false"
+DEFAULT_filter_out_web_files="false"
+DEFAULT_filter_out_media_files="false"
+DEFAULT_filter_out_image_files="false"
+DEFAULT_filter_out_video_files="false"
+DEFAULT_filter_out_audio_files="false"
+DEFAULT_filter_out_archive_files="false"
+DEFAULT_filter_out_database_files="false"
+DEFAULT_filter_out_config_files="false"
+DEFAULT_filter_out_diagram_files="false"
+DEFAULT_filter_out_markup_files="false"
+DEFAULT_filter_out_apple_config_files="false"
+DEFAULT_filter_out_programming_files="false"
+DEFAULT_filter_out_windows_files="false"
+DEFAULT_ansi="true"
+DEFAULT_print_screen="true"
+DEFAULT_verbose="false"
+DEFAULT_force_create_tmp="false"
+DEFAULT_step="false"
+DEFAULT_separator="NEWLINE"
+DEFAULT_long="false"
+
+run_final_cmd() {
+  fd --hidden --no-ignore . . \
+    | egrep -v '\.(py|js)(~)?$' \
+    | eza --all --grid --icons --color=always
+}
+
+append_filters() {
+  local find_cmd="$1"
+  local input="$2"
+  local flag="$3"
+  local pattern_prefix="$4"
+  local pattern_suffix="$5"
+
+  IFS=',' read -ra items <<< "$input"
+  for item in "${items[@]}"; do
+    item="${item#"${item%%[![:space:]]*}"}"   # Trim leading
+    item="${item%"${item##*[![:space:]]}"}"   # Trim trailing
+    [[ -n "$item" ]] && find_cmd+=" $flag \"$pattern_prefix$item$pattern_suffix\""
+  done
+
+  echo "$find_cmd"
+}
+
+
+##
+# run_split_pipeline
+#
+# Splits and executes a piped shell command string, ensuring that the full
+# pipeline runs correctly in both TTY and non-TTY environments.
+#
+# This function:
+# - Accepts a single command string with pipes (e.g., 'fd ... | grep ... | eza ...')
+# - Splits the string into its pipeline parts
+# - Trims whitespace around each part
+# - Rebuilds the cleaned pipeline
+# - Executes the command in a pseudo-terminal using `script` (if available),
+#   preserving full formatting (grid, colors, icons, etc.)
+# - Falls back to normal `bash -c` execution if `script` is not supported
+#
+# Arguments:
+#   $1 - Full pipeline command string to execute
+#
+# Example:
+#   run_split_pipeline 'fd . | grep "\.md$" | eza --all --grid --icons --color=always'
+##
+run_split_pipeline() {
+  local full_cmd="$1"  # The full command string with pipes, e.g., 'fd ... | grep ... | eza ...'
+
+  # Split the command string into pipeline parts at each pipe symbol
+  IFS='|' read -ra parts <<< "$full_cmd"
+
+  # Trim leading and trailing whitespace from each part
+  for i in "${!parts[@]}"; do
+    parts[$i]="${parts[$i]#"${parts[$i]%%[![:space:]]*}"}"  # Trim leading whitespace
+    parts[$i]="${parts[$i]%"${parts[$i]##*[![:space:]]}"}"  # Trim trailing whitespace
+  done
+
+  # Rebuild the cleaned pipeline string
+  local pipeline=""
+  for i in "${!parts[@]}"; do
+    [[ $i -gt 0 ]] && pipeline+=" | "      # Add pipe between parts (but not before the first one)
+    pipeline+="${parts[$i]}"               # Append the cleaned command part
+  done
+
+  # Try running the pipeline inside a pseudo-terminal using `script`
+  # This ensures proper rendering for tools like `eza`, `fzf`, etc.
+  if command -v script &>/dev/null && [[ -t 1 ]]; then
+    script -q /dev/null bash -c "$pipeline" 2>/dev/null || bash -c "$pipeline"
+  else
+    # Fallback to regular execution if `script` is not available or output isn't a TTY
+    bash -c "$pipeline"
+  fi
+}
 
 
 # find_files_without - Search for files while excluding specific extensions, directories, and substrings
@@ -16,237 +187,218 @@ source "$(dirname "${BASH_SOURCE[0]}")/pipeline/b.sh"
 # This function searches for files in a directory tree while allowing fine-grained control
 # over which types of files to exclude based on extensions, directories, and substrings.
 # It supports filtering by file size and various output options.
-find_files_without() { 
-    local script_dir="$(dirname "${BASH_SOURCE[0]}")"
-    local temp_result_file="$script_dir/tmp/result.log"
-    local temp_result_file_colored="$script_dir/tmp/result_colored.log"
+find_files_without() {
+    # Step 1: Parse arguments and store in a map-like array
+    declare -A overrides=()
 
-    local search_dir="."  # Base directory to start search from (default: ".")
-    local depth="2"  # Maximum directory depth to search (default: "2")
-    local extensions=""  # Additional file extensions to exclude (pipe-separated)
-    local directories=""  # Directory names to exclude (pipe-separated)
-    local substrings=""  # Substrings to exclude from filenames (pipe-separated)
-    local min_size=""  # Minimum file size filter
-    local max_size=""  # Maximum file size filter
-    local filter_out_text_files="false"  # Whether to exclude common text files (default: true)
-    local filter_out_package_files="false"  # Whether to exclude package management files (default: true)
-    local filter_out_web_files="false"  # Whether to exclude web development files (default: true)
-    local filter_out_media_files="false"  # Whether to exclude media files (default: true)
-    local filter_out_image_files="false"  # Whether to exclude image files (default: true)
-    local filter_out_video_files="false"  # Whether to exclude video files (default: true)
-    local filter_out_audio_files="false"  # Whether to exclude audio files (default: true)
-    local filter_out_archive_files="false"  # Whether to exclude archive files (default: true)
-    local filter_out_database_files="false"  # Whether to exclude database files (default: true)
-    local filter_out_config_files="false"  # Whether to exclude config files (default: true)
-    local filter_out_diagram_files="false"  # Whether to exclude diagram files (default: true)
-    local filter_out_markup_files="false"  # Whether to exclude markup files (default: true)
-    local filter_out_apple_config_files="false"  # Whether to exclude Apple config files (default: true)
-    local filter_out_windows_files="false"  # Whether to exclude Windows files (default: true)
-    local filter_out_programming_files="false"  # Whether to exclude programming files (default: true)
-    local ansi="true"  # Enable/disable ANSI colors in output (default: true)
-    local print_screen="true"  # Print results to screen (default: true)
-    local verbose="false"  # Enable verbose output (default: false)
-    local force_create_tmp="false"  # Create temp directory without prompting (default: false)
-    local step="false"  # Enable step-by-step execution (default: false)
-    local separator="\0"
-    local long="false"  # Enable long format output (default: false)
-    local type="f"  # Filter by type: f (file), d (directory), l (symlink), x (executable)
-    
-    # Parse named arguments for backwards compatibility
     for arg in "$@"; do
-        case "$arg" in
-            search_dir=*) search_dir="${arg#*=}" ;;
-            depth=*) depth="${arg#*=}" ;;
-            extensions=*) extensions="${arg#*=}" ;;
-            directories=*) directories="${arg#*=}" ;;
-            substrings=*) substrings="${arg#*=}" ;;
-            min_size=*) min_size="${arg#*=}" ;;
-            max_size=*) max_size="${arg#*=}" ;;
-            filter_out_text_files=*) filter_out_text_files="${arg#*=}" ;;
-            filter_out_package_files=*) filter_out_package_files="${arg#*=}" ;;
-            filter_out_web_files=*) filter_out_web_files="${arg#*=}" ;;
-            filter_out_media_files=*) filter_out_media_files="${arg#*=}" ;;
-            filter_out_image_files=*) filter_out_image_files="${arg#*=}" ;;
-            filter_out_video_files=*) filter_out_video_files="${arg#*=}" ;;
-            filter_out_audio_files=*) filter_out_audio_files="${arg#*=}" ;;
-            filter_out_archive_files=*) filter_out_archive_files="${arg#*=}" ;;
-            filter_out_database_files=*) filter_out_database_files="${arg#*=}" ;;
-            filter_out_config_files=*) filter_out_config_files="${arg#*=}" ;;
-            filter_out_diagram_files=*) filter_out_diagram_files="${arg#*=}" ;;
-            filter_out_markup_files=*) filter_out_markup_files="${arg#*=}" ;;
-            filter_out_apple_config_files=*) filter_out_apple_config_files="${arg#*=}" ;;
-            filter_out_programming_files=*) filter_out_programming_files="${arg#*=}" ;;
-            filter_out_windows_files=*) filter_out_windows_files="${arg#*=}" ;;
-            ansi=*) ansi="${arg#*=}" ;;
-            print_screen=*) print_screen="${arg#*=}" ;;
-            verbose=*) verbose="${arg#*=}" ;;
-            temp_file=*) temp_result_file="${arg#*=}" ;;
-            force_create_tmp=*) force_create_tmp="${arg#*=}" ;;
-            step=*) step="${arg#*=}" ;;
-            long=*) long="${arg#*=}" ;;
-            type=*) type="${arg#*=}" ;;
-            separator=*) 
-                if [[ "${arg#*=}" != "\0" && "${arg#*=}" != "\n" ]]; then
-                    echo "❌ Error: separator must be either \0 or \n" >&2
-                    return 1
-                fi
-                separator="${arg#*=}" 
-                ;;
-            *) echo "❌ Error: Unknown argument: $arg" >&2 && return 1 ;;
-        esac
+        if [[ "$arg" == --*=* ]]; then
+        key="${arg%%=*}"       # before '='
+        value="${arg#*=}"      # after '='
+        key="${key#--}"        # strip leading '--'
+
+        overrides["$key"]="$value"
+
+        # echo "🔑 Key: $key"
+        # echo "📦 Value: $value"
+        else
+        echo "❌ Invalid argument: $arg"
+        fi
     done
 
+    # Step 2: Assign default or overridden values as local variables
+    local var
+    for var in \
+        search_dir type depth min_size max_size extensions directories substrings \
+        output_format temp_file filter_out_text_files filter_out_package_files \
+        filter_out_web_files filter_out_media_files filter_out_image_files \
+        filter_out_video_files filter_out_audio_files filter_out_archive_files \
+        filter_out_database_files filter_out_config_files filter_out_diagram_files \
+        filter_out_markup_files filter_out_apple_config_files filter_out_programming_files \
+        filter_out_windows_files ansi print_screen verbose force_create_tmp step \
+        separator long; do
+
+        # If an override was passed in, use it. Otherwise use the default.
+        eval "local $var=\"\${overrides[$var]:-\${DEFAULT_$var}}\""
+    done
+
+    # Constants for output format
+    local NEWLINE=$'\n'
+    local NULL_CHAR=$'\0'
+
+
+
+    # Validate required parameters
+    if [[ -z "$search_dir" ]]; then
+        echo "❌ Error: search_dir is required" >&2
+        return 1
+    fi
+
+    # Convert size parameters to bytes if provided
+    local min_bytes=""
+    local max_bytes=""
+    if [[ -n "$min_size" ]]; then
+        min_bytes=$(convert_to_bytes "$min_size")
+    fi
+    if [[ -n "$max_size" ]]; then
+        max_bytes=$(convert_to_bytes "$max_size")
+    fi
+
+    # Validate size range
+    if [[ -n "$min_size" && -n "$max_size" && "$min_bytes" -gt "$max_bytes" ]]; then
+        echo "❌ Error: min_size ($min_size) cannot be greater than max_size ($max_size)." >&2
+        return 1
+    fi
+
+    for field in extensions substrings directories; do
+        value="${!field}"  # indirect expansion: gets the value of the variable named by $field
+        if [[ -n "$value" && "$value" =~ [*?\[\]] ]]; then
+            echo "❌ Error: Invalid $field pattern '$value'. Wildcards are not allowed." >&2
+            return 1
+        fi
+    done
 
     # Check if temp file directory exists
-    if [[ -n "$temp_result_file" ]]; then
-        temp_dir=$(dirname "$temp_result_file")
+    if [[ -n "$temp_file" ]]; then
+        local temp_dir
+        temp_dir="$(dirname "$temp_file")"
+
         if [[ ! -d "$temp_dir" ]]; then
-            if [[ "$force_create_tmp" == "true" ]]; then
-                mkdir -p "$temp_dir"
+            if [[ "$force_create_tmp" == "true" ]] || { read -p "Directory '$temp_dir' doesn't exist. Create it? (y/n) " answer && [[ "$answer" =~ ^[Yy]$ ]]; }; then
+            mkdir -p "$temp_dir"
             else
-                read -p "Directory for temp file '$temp_dir' does not exist. Create it? (y/n) " answer
-                if [[ "$answer" =~ ^[Yy]$ ]]; then
-                    mkdir -p "$temp_dir"
-                else
-                    echo "❌ Error: Temp file directory does not exist and was not created." >&2
-                    return 1
-                fi
+            echo "❌ Error: Temp file directory does not exist and was not created." >&2
+            return 1
             fi
         fi
     fi
 
     [[ "$step" == "true" ]] && read -p "Press Enter to continue with extension normalization..."
 
-    # Normalize extensions: remove leading dots if present
-    if [[ -n "$extensions" ]]; then
-        extensions=$(echo "$extensions" | sed 's/\.//g')
-    fi
-    
-    [[ "$step" == "true" ]] && read -p "Press Enter to continue with adding extensions based on flags..."
+    # Normalize extensions: remove all dots
+    [[ -n "$extensions" ]] && extensions="${extensions//./}"
 
-    # Add extensions based on enabled flags
-    if [[ "$filter_out_text_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${text_files}"
-    fi
-    if [[ "$filter_out_package_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${package_files}"
-    fi
-    if [[ "$filter_out_web_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${web_files}"
-    fi
-    if [[ "$filter_out_media_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${media_files}"
-    fi
-    if [[ "$filter_out_image_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${image_files}"
-    fi
-    if [[ "$filter_out_video_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${video_files}"
-    fi
-    if [[ "$filter_out_audio_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${audio_files}"
-    fi
-    if [[ "$filter_out_archive_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${archive_files}"
-    fi
-    if [[ "$filter_out_database_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${database_files}"
-    fi
-    if [[ "$filter_out_config_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${config_files}"
-    fi
-    if [[ "$filter_out_diagram_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${diagram_files}"
-    fi
-    if [[ "$filter_out_markup_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${markup_files}"
-    fi
-    if [[ "$filter_out_apple_config_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${apple_config_files}"
-    fi
-    if [[ "$filter_out_windows_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${windows_files}"
-    fi
-    if [[ "$filter_out_programming_files" == "true" ]]; then
-        [[ -n "$extensions" ]] && extensions="${extensions}|"
-        extensions="${extensions}${programming_files}"
+    # Add extensions based on enabled filters
+    declare -A extension_groups=(
+        [text_files]="$filter_out_text_files"
+        [package_files]="$filter_out_package_files"
+        [web_files]="$filter_out_web_files"
+        [media_files]="$filter_out_media_files"
+        [image_files]="$filter_out_image_files"
+        [video_files]="$filter_out_video_files"
+        [audio_files]="$filter_out_audio_files"
+        [archive_files]="$filter_out_archive_files"
+        [database_files]="$filter_out_database_files"
+        [config_files]="$filter_out_config_files"
+        [diagram_files]="$filter_out_diagram_files"
+        [markup_files]="$filter_out_markup_files"
+        [apple_config_files]="$filter_out_apple_config_files"
+        [programming_files]="$filter_out_programming_files"
+        [windows_files]="$filter_out_windows_files"
+    )
+
+    for group in "${!extension_groups[@]}"; do
+        if [[ "${extension_groups[$group]}" == "true" ]]; then
+            [[ -n "$extensions" ]] && extensions+="|"
+            extensions+="${!group}"
+        fi
+    done
+
+
+    find_cmd="$(get_find_command "$depth" "$search_dir" "$min_size" "$max_size" "$separator" "$type")"
+
+    filter_cmd="$(get_filter_command "$extensions" "$directories" "$substrings" "$separator" "$ansi" "$long")"
+
+    final_cmd="$find_cmd $filter_cmd"
+
+    echo "🔍 Executing command: $final_cmd"
+
+    # Execute the find command with the appropriate separator
+    if [[ "$output_format" == "NULL_CHAR" ]]; then
+        eval "$final_cmd -print0" > "$temp_file"
+    else
+        eval "$final_cmd" > "$temp_file"
     fi
 
-    extensions="${extensions#|}" # Remove leading '|'
 
-    [[ "$step" == "true" ]] && read -p "Press Enter to execute pipeline..."
+    run_split_pipeline "$final_cmd"
 
-    # Get commands from pipeline stages
-    local find_cmd=$(get_find_command \
-        "$depth" \
-        "$search_dir" \
-        "$min_size" \
-        "$max_size" \
-        "$separator" \
-        "$type")
 
-    local filter_cmd=$(get_filter_command \
-        "$extensions" \
-        "$directories" \
-        "$substrings" \
-        "$separator" \
-        "$ansi" \
-        "$long")
 
-    # Build final command
-    local final_cmd="$find_cmd$filter_cmd"
 
-    # Print command if verbose
-    [[ "$verbose" == "true" ]] && echo "Executing: $final_cmd" >&2
-    
-    # Convert string command into an array to safely execute it
-    # LEARN this doesn't work because This treats the entire pipeline as a single command, splitting on spaces — but pipes (|) are not operators when passed this way. So Bash tries to execute fd, with literal arguments including the pipe character (|), which makes no sense and fails.
-    # read -r -a cmd_array <<< "$final_cmd"
-    # result=$("${cmd_array[@]}" 2>&1)
-    
+    #escaped_cmd=$(printf "%q" "$final_cmd")
 
-    result=$(bash -c "$final_cmd" 2>&1)
-    exit_code=$?
+    #run_with_pty_and_log "out.txt" $escaped_cmd
 
-# fd -d 2 --no-hidden -t f --print0 | grep -Evz '\.(py|js)(~)?$' | tr '\0' '\n' | tr '\n' '\0' | xargs -0 eza --icons --grid --color=always
+    # less -R out.txt
 
-    #exit_code=$?  # Capture exit status
 
-    # Print the captured output for debugging
 
-    echo "Command Output: $result"
+    # run $final_cmd
 
-    # Check if command failed
-    if [[ $exit_code -ne 0 ]]; then
-        echo "❌ Error: Command execution failed with exit code $exit_code" >&2
+    # eval "$final_cmd"
+
+
+
+    #eza --all --grid --icons --color=always out.txt
+
+
+    #eza --all --grid --icons --color=always -- $(<out.txt)
+
+    #unbuffer eza --all --grid --icons --color=always -- $(<out.txt)
+
+
+    # Check if the command succeeded
+    if [[ $? -ne 0 ]]; then
+        echo "❌ Error: Command execution failed." >&2
         return 1
     fi
 
-    if [[ -z "$result" ]]; then
-        echo "❌ Error: No results found." >&2
-        return 1
-    fi
-
-    # Handle output
+    # Print results if requested
     if [[ "$print_screen" == "true" ]]; then
-        echo "$result"
+        if [[ "$output_format" == "NULL_CHAR" ]]; then
+            # Use cat -v to preserve null characters
+            cat -v "$temp_file" | tr '\0' '\n'
+        else
+            cat "$temp_file"
+        fi
     fi
-    
-    if [[ -n "$temp_result_file" ]]; then
-        echo "$result" > "$temp_result_file"
-    fi
+
+    return 0
 }
+
+# Build arguments string
+# args=""
+# [[ -n "$verbose" ]] && args+="--verbose=$verbose "
+# [[ -n "$print_screen" ]] && args+="--print-screen=$print_screen "
+# [[ -n "$ansi" ]] && args+="--ansi=$ansi "
+# [[ -n "$depth" ]] && args+="--depth=$depth "
+# [[ -n "$search_dir" ]] && args+="--search-dir=$search_dir "
+# [[ -n "$max_size" ]] && args+="--max-size=$max_size "
+# [[ -n "$min_size" ]] && args+="--min-size=$min_size "
+# [[ -n "$force_create_tmp" ]] && args+="--force-create-tmp=$force_create_tmp "
+# [[ -n "$step" ]] && args+="--step=$step "
+# [[ -n "$separator" ]] && args+="--separator=$separator "
+# [[ -n "$long" ]] && args+="--long=$long "
+# [[ -n "$type" ]] && args+="--type=$type "
+# [[ -n "$extensions" ]] && args+="--extensions=$extensions "
+# [[ -n "$directories" ]] && args+="--directories=$directories "
+# [[ -n "$substrings" ]] && args+="--substrings=$substrings "
+# [[ -n "$filter_out_text_files" ]] && args+="--filter-out-text-files=$filter_out_text_files "
+# [[ -n "$filter_out_package_files" ]] && args+="--filter-out-package-files=$filter_out_package_files "
+# [[ -n "$filter_out_web_files" ]] && args+="--filter-out-web-files=$filter_out_web_files "
+# [[ -n "$filter_out_media_files" ]] && args+="--filter-out-media-files=$filter_out_media_files "
+# [[ -n "$filter_out_image_files" ]] && args+="--filter-out-image-files=$filter_out_image_files "
+# [[ -n "$filter_out_video_files" ]] && args+="--filter-out-video-files=$filter_out_video_files "
+# [[ -n "$filter_out_audio_files" ]] && args+="--filter-out-audio-files=$filter_out_audio_files "
+# [[ -n "$filter_out_archive_files" ]] && args+="--filter-out-archive-files=$filter_out_archive_files "
+# [[ -n "$filter_out_database_files" ]] && args+="--filter-out-database-files=$filter_out_database_files "
+# [[ -n "$filter_out_config_files" ]] && args+="--filter-out-config-files=$filter_out_config_files "
+# [[ -n "$filter_out_diagram_files" ]] && args+="--filter-out-diagram-files=$filter_out_diagram_files "
+# [[ -n "$filter_out_markup_files" ]] && args+="--filter-out-markup-files=$filter_out_markup_files "
+# [[ -n "$filter_out_apple_config_files" ]] && args+="--filter-out-apple-config-files=$filter_out_apple_config_files "
+# [[ -n "$filter_out_programming_files" ]] && args+="--filter-out-programming-files=$filter_out_programming_files "
+# [[ -n "$filter_out_windows_files" ]] && args+="--filter-out-windows-files=$filter_out_windows_files "
+# [[ -n "$temp_file" ]] && args+="--temp-file=$temp_file"
+
+# find_files_without $args

@@ -20,9 +20,11 @@ setup_test_environment() {
     TESTS_PASSED=0
     TESTS_FAILED=0
     
+    # Clean up any existing test files
+    cleanup_test_environment
+    
     # Create test directory structure
-    mkdir -p "${TEST_DIR}/test_files"/{text,images,code,media,docs}
-    mkdir -p "${TEST_DIR}/test_files/node_modules/some-package"
+    mkdir -p "${TEST_DIR}/test_files"/{text,images,code,media,docs,node_modules/some-package}
     mkdir -p "${TEST_DIR}/test_files/level1/level2/level3/level4/level5"
     
     # Create test files with different sizes
@@ -35,6 +37,9 @@ setup_test_environment() {
     chmod 444 "${TEST_DIR}/test_files/readonly"
     
     create_test_files
+    
+    # Ensure all test files are readable
+    chmod -R a+r "${TEST_DIR}/test_files"
 }
 
 # Create various test files
@@ -42,10 +47,12 @@ create_test_files() {
     # Text files
     echo "Hello" > "${TEST_DIR}/test_files/text/test.txt"
     echo "Config" > "${TEST_DIR}/test_files/text/config.yml"
+    echo "Documentation" > "${TEST_DIR}/test_files/text/README.md"
     
     # Files with specific substrings
     echo "TEMP_file_to_ignore" > "${TEST_DIR}/test_files/temp_123.txt"
     echo "backup_file" > "${TEST_DIR}/test_files/backup_data.txt"
+    echo "test_file" > "${TEST_DIR}/test_files/test_file.txt"
     
     # Media files
     touch "${TEST_DIR}/test_files/images/test.jpg"
@@ -57,9 +64,11 @@ create_test_files() {
     echo "print('hello')" > "${TEST_DIR}/test_files/code/test.py"
     echo "console.log('hi');" > "${TEST_DIR}/test_files/code/script.js"
     echo "package main" > "${TEST_DIR}/test_files/code/main.go"
+    echo "<?php echo 'test'; ?>" > "${TEST_DIR}/test_files/code/test.php"
     
     # Deep nested files
     touch "${TEST_DIR}/test_files/level1/level2/level3/level4/level5/deep_file.txt"
+    touch "${TEST_DIR}/test_files/level1/level2/level3/level4/level5/deep_file2.txt"
     
     # Miscellaneous files
     touch "${TEST_DIR}/test_files/random.xyz"
@@ -81,21 +90,60 @@ create_test_files() {
     # Create mixed test files
     touch "${TEST_DIR}/test_files/mixed_test/file with mixed.txt"
     touch "${TEST_DIR}/test_files/mixed_test/spaces and chars.txt"
+    
+    # Create files for extension testing
+    touch "${TEST_DIR}/test_files/test.txt"
+    touch "${TEST_DIR}/test_files/test.md"
+    touch "${TEST_DIR}/test_files/test.js"
+    touch "${TEST_DIR}/test_files/test.py"
+    touch "${TEST_DIR}/test_files/test.jpg"
+    touch "${TEST_DIR}/test_files/test.png"
+    
+    # Create files for directory filtering
+    touch "${TEST_DIR}/test_files/node_modules/test.js"
+    touch "${TEST_DIR}/test_files/node_modules/some-package/index.js"
 }
 
 # Cleanup test environment
 cleanup_test_environment() {
-    rm -rf "${TEST_DIR}/test_files" other_test_dir
+    # Remove test files and directories
+    # First ensure we can remove read-only directories
+    if [ -d "${TEST_DIR}/test_files/readonly" ]; then
+        chmod -R 755 "${TEST_DIR}/test_files/readonly" 2>/dev/null
+    fi
+    rm -rf "${TEST_DIR}/test_files" 2>/dev/null
+    rm -rf "${TEST_DIR}/other_test_dir" 2>/dev/null
+    
+    # Ensure cleanup was successful
+    if [ -d "${TEST_DIR}/test_files" ]; then
+        echo "Warning: Failed to clean up test files directory"
+        return 1
+    fi
+    return 0
 }
 
 # Test result helper functions
 assert_success() {
-    if [ $? -eq 0 ]; then
+    local exit_code=$?
+    if [ $exit_code -eq 0 ]; then
         echo -e "${GREEN}✓ $1 passed${NC}"
         ((TESTS_PASSED++))
         return 0
     else
-        echo -e "${RED}✗ $1 failed${NC}"
+        echo -e "${RED}✗ $1 failed (exit code: $exit_code)${NC}"
+        ((TESTS_FAILED++))
+        return 1
+    fi
+}
+
+assert_failure() {
+    local exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+        echo -e "${GREEN}✓ $1 passed${NC}"
+        ((TESTS_PASSED++))
+        return 0
+    else
+        echo -e "${RED}✗ $1 failed (exit code: $exit_code)${NC}"
         ((TESTS_FAILED++))
         return 1
     fi

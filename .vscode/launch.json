@@ -8,8 +8,7 @@
             "program": "${workspaceFolder}/debug.sh",
             "args": ["all"],
             "cwd": "${workspaceFolder}",
-            "terminalKind": "integrated",
-            
+            "terminalKind": "integrated"
         },
         {
             "type": "bashdb",

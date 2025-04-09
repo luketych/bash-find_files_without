@@ -10,22 +10,22 @@ get_find_command() {
     local type="$6"
 
     # Build the command dynamically
-    local cmd="fd -d $depth --no-hidden"
+    local cmd="fd"
 
-    # Add type filter if specified, otherwise default to files
-    if [[ -n "$type" ]]; then
-        cmd+=" -t $type"
-    fi
+    # Add basic options
+    cmd+=" --hidden --no-ignore"
+    [[ -n "$depth" ]] && cmd+=" --max-depth $depth"
+    [[ -n "$type" ]] && cmd+=" --type $type"
 
-    if [[ "$separator" == "\0" ]]; then
-        cmd+=" --print0 $search_dir"
-    else
-        cmd+=" $search_dir"
-    fi
-    
     # Add size filters if specified
     [[ -n "$min_size" ]] && cmd+=" --size +${min_size}"
     [[ -n "$max_size" ]] && cmd+=" --size -${max_size}"
+
+    # Add separator option
+    [[ "$separator" == $'\0' ]] && cmd+=" --print0"
+
+    # Add search directory
+    cmd+=" . ${search_dir:-.}"
 
     echo "$cmd"
 }

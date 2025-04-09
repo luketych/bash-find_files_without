@@ -85,82 +85,97 @@ Examples:
 EOF
 }
 
+# Function to convert size to bytes
+convert_to_bytes() {
+    local size=$1
+    local value=${size%[kKmMgG]}
+    local unit=${size#$value}
+    
+    case "${unit,,}" in
+        k) echo $((value * 1024)) ;;
+        m) echo $((value * 1024 * 1024)) ;;
+        g) echo $((value * 1024 * 1024 * 1024)) ;;
+        *) echo "$value" ;;
+    esac
+}
+
 # Function to run find_files_without with parsed options
 run_find_files_without() {
-    declare -A OPTIONS=(
-        ["verbose"]="false"
-        ["print_screen"]="true"
-        ["ansi"]="true"
-        ["depth"]="2"
-        ["search_dir"]="."
-        ["max_size"]=""
-        ["min_size"]=""
-        ["force_create_tmp"]="false"
-        ["step"]="false"
-        ["separator"]="\0"
-        ["long"]="false"
-        ["type"]=""
-        ["extensions"]=""
-        ["directories"]=""
-        ["substrings"]=""
-        ["filter_out_text_files"]="false"
-        ["filter_out_package_files"]="false"
-        ["filter_out_web_files"]="false"
-        ["filter_out_media_files"]="false"
-        ["filter_out_image_files"]="false"
-        ["filter_out_video_files"]="false"
-        ["filter_out_audio_files"]="false"
-        ["filter_out_archive_files"]="false"
-        ["filter_out_database_files"]="false"
-        ["filter_out_config_files"]="false"
-        ["filter_out_diagram_files"]="false"
-        ["filter_out_markup_files"]="false"
-        ["filter_out_apple_config_files"]="false"
-        ["filter_out_programming_files"]="false"
-        ["filter_out_windows_files"]="false"
-        ["temp_file"]=""
-    )
+    # Initialize variables with defaults
+    local verbose="false"
+    local print_screen="true"
+    local ansi="true"
+    local depth="2"
+    local search_dir="."
+    local max_size=""
+    local min_size=""
+    local force_create_tmp="false"
+    local step="false"
+    local separator="\n"
+    local long="false"
+    local type=""
+    local extensions=""
+    local directories=""
+    local substrings=""
+    local filter_out_text_files="false"
+    local filter_out_package_files="false"
+    local filter_out_web_files="false"
+    local filter_out_media_files="false"
+    local filter_out_image_files="false"
+    local filter_out_video_files="false"
+    local filter_out_audio_files="false"
+    local filter_out_archive_files="false"
+    local filter_out_database_files="false"
+    local filter_out_config_files="false"
+    local filter_out_diagram_files="false"
+    local filter_out_markup_files="false"
+    local filter_out_apple_config_files="false"
+    local filter_out_programming_files="false"
+    local filter_out_windows_files="false"
+    local temp_file=""
 
     # Parse command-line arguments
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            -v|--verbose) OPTIONS["verbose"]="true" ;;
-            -p|--print-screen) OPTIONS["print_screen"]="true" ;;
-            -c|--ansi) OPTIONS["ansi"]="true" ;;
-            -d|--depth) OPTIONS["depth"]="$2"; shift ;;
-            -X|--extensions) OPTIONS["extensions"]="$2"; shift ;;
-            -D|--directories) OPTIONS["directories"]="$2"; shift ;;
-            -S|--substrings) OPTIONS["substrings"]="$2"; shift ;;
-            -s|--search-dir) OPTIONS["search_dir"]="$2"; shift ;;
-            -t|--type) OPTIONS["type"]="$2"; shift ;;
-            --max-size) OPTIONS["max_size"]="$2"; shift ;;
-            --min-size) OPTIONS["min_size"]="$2"; shift ;;
-            --temp-file) OPTIONS["temp_file"]="$2"; shift ;;
+            -v|--verbose) verbose="true" ;;
+            -p|--print-screen) print_screen="true" ;;
+            -c|--ansi) ansi="true" ;;
+            -d|--depth) depth="$2"; shift ;;
+            -X|--extensions) extensions="$2"; shift ;;
+            -D|--directories) directories="$2"; shift ;;
+            -S|--substrings) substrings="$2"; shift ;;
+            -s|--search-dir) search_dir="$2"; shift ;;
+            -t|--type) type="$2"; shift ;;
+            --max-size) max_size="$2"; shift ;;
+            --min-size) min_size="$2"; shift ;;
+            --temp-file) temp_file="$2"; shift ;;
             --separator) 
-                if [[ "$2" != "\0" && "$2" != "\n" ]]; then
-                    echo "❌ Error: separator must be either \\0 or \\n" >&2
-                    return 1
-                fi
-                OPTIONS["separator"]="$2"; shift ;;
-            --force-create-temp) OPTIONS["force_create_tmp"]="true" ;;
-            --step) OPTIONS["step"]="true" ;;
-            --long) OPTIONS["long"]="true" ;;
+                case "$2" in
+                    $'\n'|"NEWLINE"|"newline"|"\\n") separator="NEWLINE" ;;
+                    $'\0'|"NULL_CHAR"|"null_char"|"\\0") separator="NULL_CHAR" ;;
+                    *) echo "❌ Error: separator must be either NEWLINE or NULL_CHAR" >&2; return 1 ;;
+                esac
+                shift 
+                ;;
+            --force-create-temp) force_create_tmp="true" ;;
+            --step) step="true" ;;
+            --long) long="true" ;;
             --where) echo "Script location: $(dirname "$(readlink -f "$0")")"; return 0 ;;
-            --no-text-files) OPTIONS["filter_out_text_files"]="true" ;;
-            --no-package-files) OPTIONS["filter_out_package_files"]="true" ;;
-            --no-web-files) OPTIONS["filter_out_web_files"]="true" ;;
-            --no-media-files) OPTIONS["filter_out_media_files"]="true" ;;
-            --no-image-files) OPTIONS["filter_out_image_files"]="true" ;;
-            --no-video-files) OPTIONS["filter_out_video_files"]="true" ;;
-            --no-audio-files) OPTIONS["filter_out_audio_files"]="true" ;;
-            --no-archive-files) OPTIONS["filter_out_archive_files"]="true" ;;
-            --no-database-files) OPTIONS["filter_out_database_files"]="true" ;;
-            --no-config-files) OPTIONS["filter_out_config_files"]="true" ;;
-            --no-diagram-files) OPTIONS["filter_out_diagram_files"]="true" ;;
-            --no-markup-files) OPTIONS["filter_out_markup_files"]="true" ;;
-            --no-apple-config-files) OPTIONS["filter_out_apple_config_files"]="true" ;;
-            --no-programming-files) OPTIONS["filter_out_programming_files"]="true" ;;
-            --no-windows-files) OPTIONS["filter_out_windows_files"]="true" ;;
+            --no-text-files) filter_out_text_files="true" ;;
+            --no-package-files) filter_out_package_files="true" ;;
+            --no-web-files) filter_out_web_files="true" ;;
+            --no-media-files) filter_out_media_files="true" ;;
+            --no-image-files) filter_out_image_files="true" ;;
+            --no-video-files) filter_out_video_files="true" ;;
+            --no-audio-files) filter_out_audio_files="true" ;;
+            --no-archive-files) filter_out_archive_files="true" ;;
+            --no-database-files) filter_out_database_files="true" ;;
+            --no-config-files) filter_out_config_files="true" ;;
+            --no-diagram-files) filter_out_diagram_files="true" ;;
+            --no-markup-files) filter_out_markup_files="true" ;;
+            --no-apple-config-files) filter_out_apple_config_files="true" ;;
+            --no-programming-files) filter_out_programming_files="true" ;;
+            --no-windows-files) filter_out_windows_files="true" ;;
             -h|--help) usage; return 0 ;;
             --help-filters) filter_help; return 0 ;;
             --help-examples) examples_help; return 0 ;;
@@ -169,10 +184,108 @@ run_find_files_without() {
         shift
     done
 
-    # Call `find_files_without` dynamically
-    find_files_without $(for key in "${!OPTIONS[@]}"; do echo -n "$key=${OPTIONS[$key]} "; done)
-}
+    # Validate search directory
+    if [[ ! -d "$search_dir" ]]; then
+        echo "❌ Error: Directory '$search_dir' does not exist." >&2
+        return 1
+    fi
 
+    # Validate search directory pattern
+    if [[ "$search_dir" =~ [*?\[\]] ]]; then
+        echo "❌ Error: Invalid directory pattern '$search_dir'. Wildcards are not allowed." >&2
+        return 1
+    fi
+
+    # Validate depth is a positive integer
+    if [[ ! "$depth" =~ ^[0-9]+$ || "$depth" -lt 0 ]]; then
+        echo "❌ Error: Depth must be a positive integer." >&2
+        return 1
+    fi
+
+    # Validate size formats and convert to bytes
+    if [[ -n "$min_size" ]]; then
+        if [[ ! "$min_size" =~ ^[0-9]+[kKmMgG]?$ ]]; then
+            echo "❌ Error: Invalid min_size format '$min_size'. Must be a number with optional k/m/g unit." >&2
+            return 1
+        fi
+    fi
+    if [[ -n "$max_size" ]]; then
+        if [[ ! "$max_size" =~ ^[0-9]+[kKmMgG]?$ ]]; then
+            echo "❌ Error: Invalid max_size format '$max_size'. Must be a number with optional k/m/g unit." >&2
+            return 1
+        fi
+    fi
+
+    # Validate size range
+    if [[ -n "$min_size" && -n "$max_size" ]]; then
+        local min_bytes=$(convert_to_bytes "$min_size")
+        local max_bytes=$(convert_to_bytes "$max_size")
+        if [[ "$min_bytes" -gt "$max_bytes" ]]; then
+            echo "❌ Error: min_size ($min_size) cannot be greater than max_size ($max_size)." >&2
+            return 1
+        fi
+    fi
+
+    # Validate extension format
+    if [[ -n "$extensions" ]]; then
+        if [[ "$extensions" =~ [*?\[\]] ]]; then
+            echo "❌ Error: Invalid extension pattern '$extensions'. Wildcards are not allowed." >&2
+            return 1
+        fi
+    fi
+
+    # Validate substring pattern
+    if [[ -n "$substrings" ]]; then
+        if [[ "$substrings" =~ [*?\[\]] ]]; then
+            echo "❌ Error: Invalid substring pattern '$substrings'. Wildcards are not allowed." >&2
+            return 1
+        fi
+    fi
+
+    # Validate directory pattern
+    if [[ -n "$directories" ]]; then
+        if [[ "$directories" =~ [*?\[\]] ]]; then
+            echo "❌ Error: Invalid directory pattern '$directories'. Wildcards are not allowed." >&2
+            return 1
+        fi
+    fi
+
+    # Build arguments string
+    local args=""
+    [[ -n "$verbose" ]] && args+="--verbose=$verbose "
+    [[ -n "$print_screen" ]] && args+="--print-screen=$print_screen "
+    [[ -n "$ansi" ]] && args+="--ansi=$ansi "
+    [[ -n "$depth" ]] && args+="--depth=$depth "
+    [[ -n "$search_dir" ]] && args+="--search-dir=$search_dir "
+    [[ -n "$max_size" ]] && args+="--max-size=$max_size "
+    [[ -n "$min_size" ]] && args+="--min-size=$min_size "
+    [[ -n "$force_create_tmp" ]] && args+="--force-create-tmp=$force_create_tmp "
+    [[ -n "$step" ]] && args+="--step=$step "
+    [[ -n "$separator" ]] && args+="--separator=$separator "
+    [[ -n "$long" ]] && args+="--long=$long "
+    [[ -n "$type" ]] && args+="--type=$type "
+    [[ -n "$extensions" ]] && args+="--extensions=$extensions "
+    [[ -n "$directories" ]] && args+="--directories=$directories "
+    [[ -n "$substrings" ]] && args+="--substrings=$substrings "
+    [[ -n "$filter_out_text_files" ]] && args+="--filter-out-text-files=$filter_out_text_files "
+    [[ -n "$filter_out_package_files" ]] && args+="--filter-out-package-files=$filter_out_package_files "
+    [[ -n "$filter_out_web_files" ]] && args+="--filter-out-web-files=$filter_out_web_files "
+    [[ -n "$filter_out_media_files" ]] && args+="--filter-out-media-files=$filter_out_media_files "
+    [[ -n "$filter_out_image_files" ]] && args+="--filter-out-image-files=$filter_out_image_files "
+    [[ -n "$filter_out_video_files" ]] && args+="--filter-out-video-files=$filter_out_video_files "
+    [[ -n "$filter_out_audio_files" ]] && args+="--filter-out-audio-files=$filter_out_audio_files "
+    [[ -n "$filter_out_archive_files" ]] && args+="--filter-out-archive-files=$filter_out_archive_files "
+    [[ -n "$filter_out_database_files" ]] && args+="--filter-out-database-files=$filter_out_database_files "
+    [[ -n "$filter_out_config_files" ]] && args+="--filter-out-config-files=$filter_out_config_files "
+    [[ -n "$filter_out_diagram_files" ]] && args+="--filter-out-diagram-files=$filter_out_diagram_files "
+    [[ -n "$filter_out_markup_files" ]] && args+="--filter-out-markup-files=$filter_out_markup_files "
+    [[ -n "$filter_out_apple_config_files" ]] && args+="--filter-out-apple-config-files=$filter_out_apple_config_files "
+    [[ -n "$filter_out_programming_files" ]] && args+="--filter-out-programming-files=$filter_out_programming_files "
+    [[ -n "$filter_out_windows_files" ]] && args+="--filter-out-windows-files=$filter_out_windows_files "
+    [[ -n "$temp_file" ]] && args+="--temp-file=$temp_file"
+
+    find_files_without $args
+}
 
 # If script is executed directly, run the function
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

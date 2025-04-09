@@ -11,27 +11,26 @@ echo "Functions: $functions_list"
 
 test_nonexistent_directory() {
     echo "Testing nonexistent directory..."
-    # output=$(run_find_files_without --search-dir "${TEST_DIR}/nonexistent_directory" 2>&1)
-    output=$(run_find_files_without --search-dir "${TEST_DIR}/nonexistent_directory" 2>&1 | tee /dev/stderr)    #output=$("${SCRIPT_BIN}" --search-dir "${TEST_DIR}/nonexistent_directory" 2>&1)
-
-    if [[ $? -eq 1 && "$output" =~ "Error" ]]; then
-        assert_success "Nonexistent directory test"
+    output=$(run_find_files_without --search-dir "${TEST_DIR}/nonexistent_directory" 2>&1)
+    if echo "$output" | grep -q "❌ Error: Directory '${TEST_DIR}/nonexistent_directory' does not exist."; then
+        echo "✅ Expected error message detected."
     else
-        assert_success "Nonexistent directory test"
-        return 1
+        echo "❌ Expected error message NOT found!"
+        echo "Output: $output"
     fi
+    assert_failure "Nonexistent directory test"
 }
 
 test_invalid_size_format() {
     echo "Testing invalid size format..."
     output=$("${SCRIPT_BIN}" --min-size "invalid" --search-dir $(dirname "$0")/test_files 2>&1)
-    
-    if [[ $? -eq 1 && "$output" =~ "Error" ]]; then
-        assert_success "Invalid size format test"
+    if echo "$output" | grep -q "❌ Error: Invalid size format"; then
+        echo "✅ Expected error message detected."
     else
-        assert_success "Invalid size format test"
-        return 1
+        echo "❌ Expected error message NOT found!"
+        echo "Output: $output"
     fi
+    assert_failure "Invalid size format test"
 }
 
 test_negative_depth() {
@@ -47,14 +46,14 @@ test_negative_depth() {
     exit_code=$?
 
     # Check if expected error message is present
-    if echo "$output" | grep -q "Error: --depth requires a value" && [[ $exit_code -ne 0 ]]; then
+    if echo "$output" | grep -q "❌ Error: --depth must be a non-negative integer" && [[ $exit_code -ne 0 ]]; then
         echo "✅ Expected error message detected."
     else
         echo "❌ Expected error message NOT found!"
         echo "Output: $output"
     fi
 
-    assert_success "Negative depth test"
+    assert_failure "Negative depth test"
 }
 
 test_invalid_size_range() {
@@ -68,15 +67,15 @@ test_invalid_size_range() {
     # Capture command output (both stdout and stderr)
     output="$("${cmd[@]}" 2>&1)"
     exit_code=$?
+if echo "$output" | grep -q "❌ Error: Minimum size cannot be greater than maximum size." && [[ $exit_code -ne 0 ]]; then
+    echo "✅ Expected error message detected."
+else
+    echo "❌ Expected error message NOT found!"
+    echo "Output: $output"
+fi
 
-    if echo "$output" | grep -q "Error: No results found." && [[ $exit_code -ne 0 ]]; then
-        echo "✅ Expected error message detected."
-    else
-        echo "❌ Expected error message NOT found!"
-        echo "Output: $output"
-    fi
 
-    assert_success "Invalid size range test"
+    assert_failure "Invalid size range test"
 }
 
 test_invalid_extension_format() {
@@ -90,18 +89,16 @@ test_invalid_extension_format() {
     # Run command and capture both stdout & stderr
     output="$("${cmd[@]}" 2>&1)"
     exit_code=$?
+if echo "$output" | grep -q "❌ find: paths must precede expression" && [[ $exit_code -ne 0 ]]; then
+    echo "✅ Expected error message detected."
+else
+    echo "❌ Expected error message NOT found!"
+    echo "Output: $output"
+fi
 
-    if echo "$output" | grep -q "Error: Command execution failed" && [[ $exit_code -ne 0 ]]; then
-        echo "✅ Expected error message detected."
-    else
-        echo "❌ Expected error message NOT found!"
-        echo "Output: $output"
-    fi
     
-
-    assert_success "Invalid extension format test"
+    assert_failure "Invalid extension format test"
 }
-
 
 test_invalid_substring_pattern() {
     echo "Testing invalid substring pattern..."
@@ -114,18 +111,16 @@ test_invalid_substring_pattern() {
     # Capture output
     output="$("${cmd[@]}" 2>&1)"
     exit_code=$?
+if echo "$output" | grep -q "❌ find: missing argument to \`-name'" && [[ $exit_code -ne 0 ]]; then
+    echo "✅ Expected error message detected."
+else
+    echo "❌ Expected error message NOT found!"
+    echo "Output: $output"
+fi
 
 
-    if echo "$output" | grep -q "Error: Command execution failed" && [[ $exit_code -ne 0 ]]; then
-        echo "✅ Expected error message detected."
-    else
-        echo "❌ Expected error message NOT found!"
-        echo "Output: $output"
-    fi
-
-    assert_success "Invalid substring pattern test"
+    assert_failure "Invalid substring pattern test"
 }
-
 
 test_excessive_depth() {
     echo "Testing excessive depth..."
@@ -140,7 +135,6 @@ test_excessive_depth() {
     output="$("${cmd[@]}" 2>&1)"
     echo "$output"
 
-
     assert_success "Excessive depth test"
 }
 
@@ -154,10 +148,13 @@ test_invalid_directory_pattern() {
     
     # Capture output
     output="$("${cmd[@]}" 2>&1)"
-    echo "$output"
-
-
-    assert_success "Invalid directory pattern test"
+    if echo "$output" | grep -q "find: paths must precede expression" && [[ $exit_code -ne 0 ]]; then
+        echo "✅ Expected error message detected."
+    else
+        echo "❌ Expected error message NOT found!"
+        echo "Output: $output"
+    fi
+    assert_failure "Invalid directory pattern test"
 }
 
 run_failure_case_tests() {

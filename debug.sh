@@ -1,15 +1,16 @@
-#!/opt/homebrew/bin/bash
+#!/usr/bin/env bash
 
-# Debug script for find_files_with
-# This script helps test and debug the find_files_with functionality
+# Debug script for find_files_without
+# This script helps test and debug the find_files_without functionality
 
 # Source the main script
-source "$(dirname "${BASH_SOURCE[0]}")/find_files_without.sh"
+file="$(dirname "${BASH_SOURCE[0]}")/find_files_without.sh"
+source "$file"
 
 # Test cases with descriptive names
 test_basic_extension_filter() {
     echo "🧪 Testing basic extension filter (Python and JavaScript files)..."
-    find_files_without extensions="py|js" verbose=true
+    find_files_without --extensions="py|js" --verbose=true
 }
 
 test_image_files() {
